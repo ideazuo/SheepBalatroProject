@@ -6,7 +6,9 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System.Linq;
 
-//视图信息类
+/// <summary>
+/// 视图信息类，存储视图的基本配置
+/// </summary>
 public class ViewInfo
 {
     public string PrefabName;//视图预制体名称
@@ -16,7 +18,7 @@ public class ViewInfo
 }
 
 /// <summary>
-/// 视图管理器
+/// 视图管理器，负责UI视图的注册、加载、显示和销毁
 /// </summary>
 public class ViewManager
 {
@@ -33,10 +35,13 @@ public class ViewManager
         _opens = new Dictionary<int, IBaseView>();
         _view = new Dictionary<int, ViewInfo>();
         _viewCache = new Dictionary<int, IBaseView>();
-
     }
 
-    //注册视图信息
+    /// <summary>
+    /// 注册视图信息，使用整数键
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
+    /// <param name="viewInfo">视图信息</param>
     public void Register(int key, ViewInfo viewInfo)
     {
         if(_view.ContainsKey(key) == false)
@@ -45,13 +50,20 @@ public class ViewManager
         }
     }
 
-    //注册视图信息
+    /// <summary>
+    /// 注册视图信息，使用ViewType枚举值
+    /// </summary>
+    /// <param name="viewType">视图类型枚举</param>
+    /// <param name="viewInfo">视图信息</param>
     public void Register(ViewType viewType, ViewInfo viewInfo)
     {
         Register((int)viewType, viewInfo);
     }
 
-    //移除视图信息
+    /// <summary>
+    /// 注销视图信息
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
     public void UnRegister(int key)
     {
         if(_view.ContainsKey(key))
@@ -60,7 +72,10 @@ public class ViewManager
         }
     }
 
-    //移除面板
+    /// <summary>
+    /// 移除视图及其所有引用
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
     public void RemoveView(int key)
     {
         _view.Remove(key);
@@ -68,7 +83,10 @@ public class ViewManager
         _opens.Remove(key);
     }
 
-    //移除控制器中的面板视图
+    /// <summary>
+    /// 移除指定控制器关联的所有视图
+    /// </summary>
+    /// <param name="ctl">目标控制器</param>
     public void RemoveViewByController(BaseController ctl)
     {
         foreach(var item in _view)
@@ -80,13 +98,21 @@ public class ViewManager
         }
     }
 
-    //是否开启中
+    /// <summary>
+    /// 检查指定视图是否已打开
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
+    /// <returns>视图是否已打开</returns>
     public bool IsOpen(int key)
     {
         return _opens.ContainsKey(key);
     }
 
-    //获得某个视图
+    /// <summary>
+    /// 获取指定视图的引用
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
+    /// <returns>找到的视图实例，未找到则返回null</returns>
     public IBaseView GetView(int key)
     {
         if(_opens.ContainsKey(key))
@@ -100,6 +126,12 @@ public class ViewManager
         return null;
     }
 
+    /// <summary>
+    /// 获取指定视图的引用并转换为目标类型
+    /// </summary>
+    /// <typeparam name="T">视图类型</typeparam>
+    /// <param name="key">视图唯一标识键</param>
+    /// <returns>找到的视图实例，未找到则返回null</returns>
     public T GetView<T>(int key) where T : class, IBaseView
     {
         IBaseView view = GetView(key);
@@ -110,7 +142,10 @@ public class ViewManager
         return null;
     }
 
-    //销毁视图
+    /// <summary>
+    /// 销毁指定视图及其游戏对象
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
     public void Destroy(int key)
     {
         IBaseView oldView = GetView(key);
@@ -122,10 +157,14 @@ public class ViewManager
         }
     }
 
-    //关闭面板视图
+    /// <summary>
+    /// 关闭指定视图
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
+    /// <param name="args">关闭时传递的参数</param>
     public void Close(int key, params object[] args)
     {
-        //没有打开
+        // 视图未打开则直接返回
         if(IsOpen(key) == false)
         {
             return;
@@ -139,6 +178,9 @@ public class ViewManager
         }
     }
 
+    /// <summary>
+    /// 关闭所有已打开的视图
+    /// </summary>
     public void CloseAll()
     {
         List<IBaseView> list = _opens.Values.ToList();
@@ -149,26 +191,34 @@ public class ViewManager
         }
     }
 
-    //打开面板
+    /// <summary>
+    /// 使用ViewType枚举打开视图
+    /// </summary>
+    /// <param name="type">视图类型枚举</param>
+    /// <param name="args">打开时传递的参数</param>
     public void Open(ViewType type, params object[] args)
     {
         Open((int)type, args);
     }
 
-    //打开某个视图面板
+    /// <summary>
+    /// 打开指定视图，如果视图未加载则先加载
+    /// </summary>
+    /// <param name="key">视图唯一标识键</param>
+    /// <param name="args">打开时传递的参数</param>
     public void Open(int key, params object[] args)
     {
         IBaseView view = GetView(key);
         ViewInfo viewInfo = _view[key];
         if(view == null)
         {
-            //不存在的视图，进行资源加载
-            string type = ((ViewType)key).ToString();//类型的字符串跟脚本名称对应
+            // 视图未加载，从Resources加载预制体
+            string type = ((ViewType)key).ToString(); // 类型字符串与脚本名称对应
             GameObject uiObj = UnityEngine.Object.Instantiate(Resources.Load($"View/{viewInfo.PrefabName}"), viewInfo.parentTf) as GameObject;
             
             if (uiObj == null)
             {
-                Debug.LogError($"Failed to load prefab: View/{viewInfo.PrefabName}");
+                Debug.LogError($"没有找到该界面：/{viewInfo.PrefabName}");
             }
 
             Canvas canvas = uiObj.GetComponent<Canvas>();
@@ -180,28 +230,28 @@ public class ViewManager
             {
                 uiObj.AddComponent<GraphicRaycaster>();
             }
-            canvas.overrideSorting = true;//可以设置层级
-            canvas.sortingOrder = viewInfo.Sorting_Order;//设置层级
-            view = uiObj.AddComponent(Type.GetType(type)) as IBaseView;//添加对应view脚本
-            view.ViewId = key;//视图id
-            view.Controller = viewInfo.controller;//设置控制器
-            //添加视图缓存
+            canvas.overrideSorting = true; // 启用排序覆盖
+            canvas.sortingOrder = viewInfo.Sorting_Order; // 设置排序层级
+            view = uiObj.AddComponent(Type.GetType(type)) as IBaseView; // 添加对应view脚本
+            view.ViewId = key; // 设置视图ID
+            view.Controller = viewInfo.controller; // 设置控制器
+            // 添加到视图缓存
             _viewCache.Add(key, view);
             viewInfo.controller.OnLoadView(view);
         }
 
-        //已经打开了
+        // 已经打开则直接返回
         if (this._opens.ContainsKey(key) == true)
         {
             return;
         }
         this._opens.Add(key, view);
 
-        //已经初始化过
+        // 根据初始化状态执行不同操作
         if (view.IsInit())
         {
-            view.SetVisable(true);//显示
-            view.Open(args);//打开
+            view.SetVisable(true); // 显示视图
+            view.Open(args); // 调用打开方法
             viewInfo.controller.OpenView(view);
         }
         else
@@ -211,23 +261,6 @@ public class ViewManager
             view.Open(args);
             viewInfo.controller.OpenView(view);
         }
-    }
-
-    /// <summary>
-    /// 显示伤害数字
-    /// </summary>
-    /// <param name="num"></param>
-    /// <param name="color"></param>
-    /// <param name="pos"></param>
-    public void ShowHitNum(string num, Color color, Vector3 pos)
-    {
-        GameObject obj = UnityEngine.Object.Instantiate(Resources.Load("View/HitNum"), worldCanvasTf) as GameObject;
-        obj.transform.position = pos;
-        obj.transform.DOMove(pos + Vector3.up * 1.75f, 0.65f).SetEase(Ease.OutBack);
-        UnityEngine.Object.Destroy(obj, 0.75f);
-        Text hitTxt = obj.GetComponent<Text>();
-        hitTxt.text = num;
-        hitTxt.color = color;
     }
 }
 
