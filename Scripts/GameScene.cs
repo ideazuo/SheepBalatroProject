@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameScene : MonoBehaviour
 {
     float dt;
-    private void Awake()
+    void Awake()
     {
         GameApp.Instance.Init();
     }

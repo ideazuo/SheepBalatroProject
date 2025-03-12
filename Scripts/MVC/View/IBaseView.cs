@@ -7,7 +7,7 @@ public interface IBaseView
 {
     bool IsInit();//视图是否已经初始化
 
-    bool IsShow();//是否现实
+    bool IsShow();//是否显示
 
     void InitUI();//初始化面板
 
