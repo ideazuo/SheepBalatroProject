@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class GameView : BaseView
 {
-    // Start is called before the first frame update
+    Transform cardNodeParent;//初始牌存放节点
+    Transform selectCardNodeParent;//选择的牌存放节点
+
     void Start()
     {
-        
+        cardNodeParent = Find<Transform>("CardNode"); // 父物体
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.CreateCard,
+            CardType.Poker, CardSuit.Heart, CardRank.Ten, cardNodeParent);
     }
 
     // Update is called once per frame

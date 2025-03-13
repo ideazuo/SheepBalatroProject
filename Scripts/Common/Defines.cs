@@ -28,4 +28,7 @@ public static class Defines
     public static readonly string OnIdleEvent = "OnIdleEvent";
     public static readonly string OnCancelEvent = "OnCancelEvent";
     public static readonly string OnRemoveHeroToSceneEvent = "OnRemoveHeroToSceneEvent";
+    
+    //卡牌相关
+    public static readonly string CreateCard = "CreateCard";//创建卡牌
 }

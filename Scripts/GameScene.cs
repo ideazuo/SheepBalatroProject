@@ -24,6 +24,7 @@ public class GameScene : MonoBehaviour
     {
         GameApp.ControllerManager.Register(ControllerType.GameUI, new GameUIController());
         GameApp.ControllerManager.Register(ControllerType.Game, new GameController());
+        GameApp.ControllerManager.Register(ControllerType.Card, new CardController());
     }
 
     //执行所有控制器初始化
