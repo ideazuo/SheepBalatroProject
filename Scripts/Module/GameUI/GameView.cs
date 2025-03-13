@@ -9,9 +9,10 @@ public class GameView : BaseView
 
     void Start()
     {
-        cardNodeParent = Find<Transform>("CardNode"); // 父物体
-        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.CreateCard,
-            CardType.Poker, CardSuit.Heart, CardRank.Ten, cardNodeParent);
+        cardNodeParent = Find<Transform>("CardNode");
+        selectCardNodeParent = Find<Transform>("SelectCardNode");
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 2);
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent);
     }
 
     // Update is called once per frame

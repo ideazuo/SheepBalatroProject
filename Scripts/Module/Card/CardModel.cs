@@ -13,6 +13,37 @@ public class CardModel : BaseModel
     public List<Card> Cards { get; private set; } = new List<Card>();
     
     /// <summary>
+    /// 卡牌牌组字典
+    /// </summary>
+    private Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
+    
+    /// <summary>
+    /// 设置卡牌牌组
+    /// </summary>
+    /// <param name="deck">卡牌牌组字典</param>
+    public void SetCardDeck(Dictionary<string, CardInfo> deck)
+    {
+        cardDeck = deck;
+    }
+    
+    /// <summary>
+    /// 获取卡牌牌组
+    /// </summary>
+    /// <returns>卡牌牌组字典</returns>
+    public Dictionary<string, CardInfo> GetCardDeck()
+    {
+        return cardDeck;
+    }
+    
+    /// <summary>
+    /// 清空卡牌牌组
+    /// </summary>
+    public void ClearCardDeck()
+    {
+        cardDeck.Clear();
+    }
+    
+    /// <summary>
     /// 添加卡牌到模型
     /// </summary>
     /// <param name="card">要添加的卡牌</param>

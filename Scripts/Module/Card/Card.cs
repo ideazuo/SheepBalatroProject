@@ -30,6 +30,11 @@ public class Card : MonoBehaviour, IPointerClickHandler
     private Image cardImage;
     
     /// <summary>
+    /// 是否可交互
+    /// </summary>
+    private bool isInteractable = true;
+    
+    /// <summary>
     /// 初始化卡牌
     /// </summary>
     private void Awake()
@@ -73,6 +78,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
         {
             // 宝箱牌逻辑，预留
         }
+    }
+    
+    /// <summary>
+    /// 设置卡牌是否可交互
+    /// </summary>
+    /// <param name="interactable">是否可交互</param>
+    public void SetInteractable(bool interactable)
+    {
+        isInteractable = interactable;
     }
     
     /// <summary>
@@ -120,6 +134,24 @@ public class Card : MonoBehaviour, IPointerClickHandler
     /// </summary>
     public void OnPointerClick(PointerEventData eventData)
     {
+        // 获取重叠检测组件
+        CardOverlapDetector detector = GetComponent<CardOverlapDetector>();
+        
+        // 在点击时立即进行重叠检测
+        if (detector != null)
+        {
+            bool overlapped = detector.IsCardOverlapped();
+            if (overlapped)
+            {
+                // 如果被遮挡，直接返回，不处理点击
+                return;
+            }
+        }
+        
+        // 如果卡牌不可交互，忽略点击
+        if (!isInteractable)
+            return;
+            
         if (Type == CardType.Poker)
         {
             string suitName = "";
@@ -160,6 +192,41 @@ public class Card : MonoBehaviour, IPointerClickHandler
             }
             
             Debug.Log($"点击了{suitName}{rankName}");
+            
+            // 将卡牌设置为最顶层（在所有其他卡牌之上）
+            transform.SetAsLastSibling();
+            
+            // 通知所有卡牌重新检测重叠状态
+            if (detector != null)
+            {
+                // 等待一帧确保层级更新
+                StartCoroutine(UpdateAllCardsNextFrame());
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 在下一帧更新所有卡牌状态
+    /// </summary>
+    private IEnumerator UpdateAllCardsNextFrame()
+    {
+        yield return null; // 等待下一帧
+        
+        Transform container = transform.parent;
+        if (container != null)
+        {
+            for (int i = 0; i < container.childCount; i++)
+            {
+                CardOverlapDetector detector = container.GetChild(i).GetComponent<CardOverlapDetector>();
+                if (detector != null)
+                {
+                    bool overlapped = detector.IsCardOverlapped();
+                    if (overlapped != detector.IsOverlapped)
+                    {
+                        detector.SetOverlapped(overlapped);
+                    }
+                }
+            }
         }
     }
 } 
