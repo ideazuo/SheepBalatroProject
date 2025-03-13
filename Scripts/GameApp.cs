@@ -12,7 +12,9 @@ public class GameApp : Singleton<GameApp>
     public static ControllerManager ControllerManager;//控制器管理器
 
     public static ViewManager ViewManager;//视图管理器
-    
+
+    public static ConfigManager ConfigManager;//配置表管理器
+
     public static CardManager CardManager;//卡牌管理器
 
     public override void Init()
@@ -22,6 +24,8 @@ public class GameApp : Singleton<GameApp>
         ControllerManager = new ControllerManager();
 
         ViewManager = new ViewManager();
+
+        ConfigManager = new ConfigManager();
 
         CardManager = new CardManager();
         

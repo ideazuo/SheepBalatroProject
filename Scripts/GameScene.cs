@@ -15,6 +15,11 @@ public class GameScene : MonoBehaviour
         //播放背景音乐
         GameApp.SoundManager.PlayBGM("StartBgm");
 
+        //注册配置表
+        RegisterConfigs();
+
+        GameApp.ConfigManager.LoadAllConfigs();//加载配置表
+
         RegisterController();//注册游戏中的控制器
         InitModule();
     }
@@ -31,6 +36,12 @@ public class GameScene : MonoBehaviour
     void InitModule()
     {
         GameApp.ControllerManager.InitAllControllers();
+    }
+
+    //注册配置表
+    void RegisterConfigs()
+    {
+        GameApp.ConfigManager.Register("hand", new ConfigData("hand"));
     }
 
     void Update()
