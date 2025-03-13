@@ -35,6 +35,14 @@ public class GameUIController : BaseController
             parentTf = GameApp.ViewManager.canvasTf
         });
 
+        //注册游戏面板
+        GameApp.ViewManager.Register(ViewType.GameView, new ViewInfo()
+        {
+            PrefabName = "GameView",
+            controller = this,
+            parentTf = GameApp.ViewManager.canvasTf
+        });
+
         InitModuleEvent();//初始化模板事件
         InitGlobalEvent();//初始化全局事件
     }
@@ -44,6 +52,7 @@ public class GameUIController : BaseController
         RegisterFunc(Defines.OpenStartView, openStartView);//注册打开开始面板
         RegisterFunc(Defines.OpenSetView, openSetView);//注册打开设置面板
         RegisterFunc(Defines.OpenMessageView, openMessageView);//注册打开提示面板
+        RegisterFunc(Defines.OpenGameView, openGameView);//注册打开游戏面板
     }
 
     //打开开始游戏面板
@@ -62,6 +71,11 @@ public class GameUIController : BaseController
     private void openMessageView(System.Object[] arg)
     {
         GameApp.ViewManager.Open(ViewType.MessageView, arg);
+    }
+
+    private void openGameView(System.Object[] arg)
+    {
+        GameApp.ViewManager.Open(ViewType.GameView, arg);
     }
 
 }
