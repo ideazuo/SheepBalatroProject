@@ -11,7 +11,7 @@ public class GameView : BaseView
     {
         cardNodeParent = Find<Transform>("CardNode");
         selectCardNodeParent = Find<Transform>("SelectCardNode");
-        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 2);
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
     }
 

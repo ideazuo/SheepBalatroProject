@@ -5,10 +5,22 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 /// <summary>
-/// 卡牌类，处理卡牌的基本属性和行为
+/// 卡牌类，处理卡牌的基本属性和视图表现
+/// 实现MVC架构中的View层，仅负责UI展示和用户输入捕获
 /// </summary>
 public class Card : BaseView, IPointerClickHandler
 {
+    /// <summary>
+    /// 卡牌点击事件委托
+    /// </summary>
+    /// <param name="card">被点击的卡牌</param>
+    public delegate void CardClickedHandler(Card card);
+    
+    /// <summary>
+    /// 卡牌点击事件
+    /// </summary>
+    public static event CardClickedHandler OnCardClicked;
+    
     /// <summary>
     /// 容器B对象
     /// </summary>
@@ -26,6 +38,14 @@ public class Card : BaseView, IPointerClickHandler
     public static void SetContainerB(Transform container)
     {
         containerB = container;
+    }
+    
+    /// <summary>
+    /// 获取容器B引用
+    /// </summary>
+    public static Transform GetContainerB()
+    {
+        return containerB;
     }
     
     /// <summary>
@@ -224,70 +244,36 @@ public class Card : BaseView, IPointerClickHandler
             
             Debug.Log($"点击了{suitName}{rankName}");
             
-            // 如果容器B已经设置，尝试移动卡牌
-            if (containerB != null)
-            {
-                MoveCardToContainerB();
-            }
-            else
-            {
-                // 将卡牌设置为最顶层（在所有其他卡牌之上）
-                transform.SetAsLastSibling();
-                
-                // 通知所有卡牌重新检测重叠状态
-                if (detector != null)
-                {
-                    // 等待一帧确保层级更新
-                    StartCoroutine(UpdateAllCardsNextFrame());
-                }
-            }
+            // 触发卡牌点击事件，由Controller处理后续业务逻辑
+            OnCardClicked?.Invoke(this);
         }
     }
     
     /// <summary>
-    /// 移动卡牌到容器B
+    /// 在下一帧更新所有卡牌状态
     /// </summary>
-    private void MoveCardToContainerB()
+    public void UpdateAllCardsState()
     {
-        // 获取卡牌键
-        string cardKey = GetCardKey();
-        
-        // 获取卡牌模型
-        CardModel cardModel = GameApp.ControllerManager.GetControllerModel((int)ControllerType.Card) as CardModel;
-        if (cardModel == null)
-        {
-            Debug.LogError("找不到卡牌模型");
-            return;
-        }
-        
-        // 检查容器B是否已满
-        if (cardModel.ContainerBCards.Count >= 5)
-        {
-            Debug.LogWarning("容器B已满，最多只能放置5张卡牌");
-            return;
-        }
-        
-        // 保存原始父物体，用于还原
-        Transform originalParent = transform.parent;
-        
-        // 从容器A移除并添加到容器B
-        if (cardModel.RemoveCardFromContainerA(cardKey))
-        {
-            // 更新卡牌的父对象为容器B
-            transform.SetParent(containerB, false);
-            
-            // 重置在新父对象中的位置
-            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            
-            // 添加到容器B集合中
-            cardModel.AddCardToContainerB(cardKey, this);
-            
-            Debug.Log($"卡牌 {cardKey} 已从容器A移动到容器B");
-        }
-        else
-        {
-            Debug.LogWarning($"卡牌 {cardKey} 不在容器A中，无法移动");
-        }
+        StartCoroutine(UpdateAllCardsNextFrame());
+    }
+    
+    /// <summary>
+    /// 设置卡牌为最顶层
+    /// </summary>
+    public void SetAsTopMost()
+    {
+        transform.SetAsLastSibling();
+    }
+    
+    /// <summary>
+    /// 将卡牌移动到指定容器，由Controller调用
+    /// </summary>
+    /// <param name="targetContainer">目标容器</param>
+    public void MoveToContainer(Transform targetContainer)
+    {
+        // 仅处理视图层的移动逻辑
+        transform.SetParent(targetContainer, false);
+        GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
     }
     
     /// <summary>

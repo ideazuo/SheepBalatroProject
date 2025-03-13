@@ -10,6 +10,18 @@ using UnityEngine.EventSystems;
 public class CardOverlapDetector : MonoBehaviour
 {
     /// <summary>
+    /// 重叠状态变化事件委托
+    /// </summary>
+    /// <param name="card">卡牌对象</param>
+    /// <param name="isOverlapped">是否被遮挡</param>
+    public delegate void OverlapStateChangedHandler(Card card, bool isOverlapped);
+    
+    /// <summary>
+    /// 重叠状态变化事件
+    /// </summary>
+    public static event OverlapStateChangedHandler OnOverlapStateChanged;
+    
+    /// <summary>
     /// 卡牌对象
     /// </summary>
     private Card card;
@@ -49,6 +61,9 @@ public class CardOverlapDetector : MonoBehaviour
         {
             isOverlapped = overlapped;
             UpdateCardState();
+            
+            // 触发重叠状态变化事件
+            OnOverlapStateChanged?.Invoke(card, isOverlapped);
         }
     }
     
@@ -94,6 +109,9 @@ public class CardOverlapDetector : MonoBehaviour
             {
                 isOverlapped = overlapped;
                 UpdateCardState();
+                
+                // 触发重叠状态变化事件
+                OnOverlapStateChanged?.Invoke(card, isOverlapped);
             }
         }
     }
@@ -114,6 +132,9 @@ public class CardOverlapDetector : MonoBehaviour
                 {
                     detector.isOverlapped = overlapped;
                     detector.UpdateCardState();
+                    
+                    // 触发重叠状态变化事件
+                    OnOverlapStateChanged?.Invoke(detector.card, detector.isOverlapped);
                 }
             }
         }
@@ -147,7 +168,7 @@ public class CardOverlapDetector : MonoBehaviour
                 {
                     Rect otherWorldRect = GetWorldRect(otherRect);
                     
-                    // 如果两个矩形相交且重叠面积超过15%，认为被遮挡
+                    // 如果两个矩形相交且重叠面积超过阈值，认为被遮挡
                     if (myRect.Overlaps(otherWorldRect))
                     {
                         Rect intersection = new Rect(
