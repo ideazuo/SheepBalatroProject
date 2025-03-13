@@ -12,9 +12,8 @@ public class GameApp : Singleton<GameApp>
     public static ControllerManager ControllerManager;//控制器管理器
 
     public static ViewManager ViewManager;//视图管理器
-
-    // 不再尝试在GameApp中持有CoroutineHelper的实例
-    // CoroutineHelper已经是单例，可以直接通过CoroutineHelper.instance访问
+    
+    public static CardManager CardManager;//卡牌管理器
 
     public override void Init()
     {
@@ -23,6 +22,8 @@ public class GameApp : Singleton<GameApp>
         ControllerManager = new ControllerManager();
 
         ViewManager = new ViewManager();
+
+        CardManager = new CardManager();
         
         // 初始化CoroutineHelper
         Debug.Log("确保CoroutineHelper实例已创建");

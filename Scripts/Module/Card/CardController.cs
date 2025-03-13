@@ -128,6 +128,14 @@ public class CardController : BaseController
         RegisterFunc(Defines.SetContainerB, SetContainerB);
         RegisterFunc(Defines.EvaluatePokerHand, EvaluatePokerHand);
         RegisterFunc(Defines.ClearContainerBWithDelay, ClearContainerBWithDelay);
+        
+        // 注册CardManager需要的回调函数
+        RegisterFunc(Defines.AddCardToContainerA, AddCardToContainerA);
+        RegisterFunc(Defines.RemoveCardFromContainerA, RemoveCardFromContainerAWithReturn);
+        RegisterFunc(Defines.AddCardToContainerB, AddCardToContainerB);
+        RegisterFunc(Defines.GetContainerBCount, GetContainerBCount);
+        RegisterFunc(Defines.OnCardOverlapped, OnCardOverlapped);
+        RegisterFunc(Defines.OnCardRevealed, OnCardRevealed);
     }
     
     /// <summary>
@@ -556,6 +564,120 @@ public class CardController : BaseController
             // 卡牌取消遮挡时的逻辑
             Debug.Log($"卡牌 {card.GetCardKey()} 变为可见");
         }
+    }
+
+    /// <summary>
+    /// 添加卡牌到容器A的集合中
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: string - 卡牌键
+    /// args[1]: Card - 卡牌对象
+    /// </param>
+    private void AddCardToContainerA(object[] args)
+    {
+        if (args.Length < 2 || !(args[0] is string) || !(args[1] is Card))
+        {
+            Debug.LogError("AddCardToContainerA参数不足或类型错误");
+            return;
+        }
+        
+        string cardKey = (string)args[0];
+        Card card = (Card)args[1];
+        
+        cardModel.AddCardToContainerA(cardKey, card);
+    }
+    
+    /// <summary>
+    /// 从容器A的集合中移除卡牌并返回是否成功
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: string - 卡牌键
+    /// </param>
+    /// <returns>是否成功移除</returns>
+    private void RemoveCardFromContainerAWithReturn(object[] args)
+    {
+        if (args.Length < 1 || !(args[0] is string))
+        {
+            Debug.LogError("RemoveCardFromContainerA参数不足或类型错误");
+            return;
+        }
+        
+        string cardKey = (string)args[0];
+        bool success = cardModel.RemoveCardFromContainerA(cardKey);
+        
+        Debug.Log($"从容器A移除卡牌 {cardKey}: {(success ? "成功" : "失败")}");
+    }
+    
+    /// <summary>
+    /// 添加卡牌到容器B的集合中
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: string - 卡牌键
+    /// args[1]: Card - 卡牌对象
+    /// </param>
+    private void AddCardToContainerB(object[] args)
+    {
+        if (args.Length < 2 || !(args[0] is string) || !(args[1] is Card))
+        {
+            Debug.LogError("AddCardToContainerB参数不足或类型错误");
+            return;
+        }
+        
+        string cardKey = (string)args[0];
+        Card card = (Card)args[1];
+        
+        cardModel.AddCardToContainerB(cardKey, card);
+    }
+    
+    /// <summary>
+    /// 获取容器B中卡牌数量
+    /// </summary>
+    /// <param name="args">不需要参数</param>
+    /// <returns>容器B中卡牌数量</returns>
+    private void GetContainerBCount(object[] args)
+    {
+        int count = cardModel.ContainerBCards.Count;
+        Debug.Log($"容器B中的卡牌数量: {count}");
+    }
+    
+    /// <summary>
+    /// 处理卡牌被遮挡事件
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: string - 卡牌键
+    /// </param>
+    private void OnCardOverlapped(object[] args)
+    {
+        if (args.Length < 1 || !(args[0] is string))
+        {
+            Debug.LogError("OnCardOverlapped参数不足或类型错误");
+            return;
+        }
+        
+        string cardKey = (string)args[0];
+        Debug.Log($"Controller: 卡牌 {cardKey} 被遮挡");
+        
+        // 在这里可以添加卡牌被遮挡时的业务逻辑
+    }
+    
+    /// <summary>
+    /// 处理卡牌取消遮挡事件
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: string - 卡牌键
+    /// </param>
+    private void OnCardRevealed(object[] args)
+    {
+        if (args.Length < 1 || !(args[0] is string))
+        {
+            Debug.LogError("OnCardRevealed参数不足或类型错误");
+            return;
+        }
+        
+        string cardKey = (string)args[0];
+        Debug.Log($"Controller: 卡牌 {cardKey} 变为可见");
+        
+        // 在这里可以添加卡牌变为可见时的业务逻辑
     }
 }
 

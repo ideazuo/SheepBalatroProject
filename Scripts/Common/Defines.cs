@@ -36,4 +36,12 @@ public static class Defines
     public static readonly string SetContainerB = "SetContainerB";//设置容器B
     public static readonly string EvaluatePokerHand = "EvaluatePokerHand";//评估扑克牌手牌
     public static readonly string ClearContainerBWithDelay = "ClearContainerBWithDelay";//延迟清理容器B
+    
+    // CardManager相关常量
+    public static readonly string AddCardToContainerA = "AddCardToContainerA";//添加卡牌到容器A
+    public static readonly string RemoveCardFromContainerA = "RemoveCardFromContainerA";//从容器A移除卡牌
+    public static readonly string AddCardToContainerB = "AddCardToContainerB";//添加卡牌到容器B
+    public static readonly string GetContainerBCount = "GetContainerBCount";//获取容器B中卡牌数量
+    public static readonly string OnCardOverlapped = "OnCardOverlapped";//卡牌被遮挡事件
+    public static readonly string OnCardRevealed = "OnCardRevealed";//卡牌取消遮挡事件
 }
