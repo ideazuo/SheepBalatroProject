@@ -18,6 +18,106 @@ public class CardModel : BaseModel
     private Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
     
     /// <summary>
+    /// 容器A中的卡牌集合，键为花色和点数组合，值为卡牌对象
+    /// </summary>
+    private Dictionary<string, Card> containerACards = new Dictionary<string, Card>();
+    
+    /// <summary>
+    /// 容器B中的卡牌集合，键为花色和点数组合，值为卡牌对象，最多5张
+    /// </summary>
+    private Dictionary<string, Card> containerBCards = new Dictionary<string, Card>();
+    
+    /// <summary>
+    /// 获取容器A中的卡牌集合
+    /// </summary>
+    public Dictionary<string, Card> ContainerACards => containerACards;
+    
+    /// <summary>
+    /// 获取容器B中的卡牌集合
+    /// </summary>
+    public Dictionary<string, Card> ContainerBCards => containerBCards;
+    
+    /// <summary>
+    /// 向容器A添加卡牌
+    /// </summary>
+    /// <param name="key">卡牌键名（花色和点数组合）</param>
+    /// <param name="card">卡牌对象</param>
+    public void AddCardToContainerA(string key, Card card)
+    {
+        if (!containerACards.ContainsKey(key))
+        {
+            containerACards.Add(key, card);
+        }
+    }
+    
+    /// <summary>
+    /// 从容器A移除卡牌
+    /// </summary>
+    /// <param name="key">卡牌键名（花色和点数组合）</param>
+    /// <returns>是否移除成功</returns>
+    public bool RemoveCardFromContainerA(string key)
+    {
+        if (containerACards.ContainsKey(key))
+        {
+            return containerACards.Remove(key);
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 向容器B添加卡牌，最多5张
+    /// </summary>
+    /// <param name="key">卡牌键名（花色和点数组合）</param>
+    /// <param name="card">卡牌对象</param>
+    /// <returns>是否添加成功</returns>
+    public bool AddCardToContainerB(string key, Card card)
+    {
+        // 检查容器B是否已满（最多5张卡牌）
+        if (containerBCards.Count >= 5)
+        {
+            Debug.LogWarning("容器B已达到上限（5张卡牌）");
+            return false;
+        }
+        
+        if (!containerBCards.ContainsKey(key))
+        {
+            containerBCards.Add(key, card);
+            return true;
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 从容器B移除卡牌
+    /// </summary>
+    /// <param name="key">卡牌键名（花色和点数组合）</param>
+    /// <returns>是否移除成功</returns>
+    public bool RemoveCardFromContainerB(string key)
+    {
+        if (containerBCards.ContainsKey(key))
+        {
+            return containerBCards.Remove(key);
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 清空容器A中的卡牌
+    /// </summary>
+    public void ClearContainerA()
+    {
+        containerACards.Clear();
+    }
+    
+    /// <summary>
+    /// 清空容器B中的卡牌
+    /// </summary>
+    public void ClearContainerB()
+    {
+        containerBCards.Clear();
+    }
+    
+    /// <summary>
     /// 设置卡牌牌组
     /// </summary>
     /// <param name="deck">卡牌牌组字典</param>

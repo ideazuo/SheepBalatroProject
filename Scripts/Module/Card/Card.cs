@@ -10,6 +10,20 @@ using UnityEngine.EventSystems;
 public class Card : MonoBehaviour, IPointerClickHandler
 {
     /// <summary>
+    /// 容器B对象
+    /// </summary>
+    private static Transform containerB;
+    
+    /// <summary>
+    /// 设置容器B引用
+    /// </summary>
+    /// <param name="container">容器B对象</param>
+    public static void SetContainerB(Transform container)
+    {
+        containerB = container;
+    }
+    
+    /// <summary>
     /// 卡牌类型
     /// </summary>
     public CardType Type { get; private set; }
@@ -54,6 +68,15 @@ public class Card : MonoBehaviour, IPointerClickHandler
             rootCanvas.gameObject.AddComponent<GraphicRaycaster>();
             Debug.Log("已添加 GraphicRaycaster 到 Canvas");
         }
+    }
+    
+    /// <summary>
+    /// 生成卡牌的唯一键名
+    /// </summary>
+    /// <returns>卡牌的唯一键名，格式为 "Suit_Rank"</returns>
+    public string GetCardKey()
+    {
+        return $"{Suit}_{Rank}";
     }
     
     /// <summary>
@@ -193,15 +216,69 @@ public class Card : MonoBehaviour, IPointerClickHandler
             
             Debug.Log($"点击了{suitName}{rankName}");
             
-            // 将卡牌设置为最顶层（在所有其他卡牌之上）
-            transform.SetAsLastSibling();
-            
-            // 通知所有卡牌重新检测重叠状态
-            if (detector != null)
+            // 如果容器B已经设置，尝试移动卡牌
+            if (containerB != null)
             {
-                // 等待一帧确保层级更新
-                StartCoroutine(UpdateAllCardsNextFrame());
+                MoveCardToContainerB();
             }
+            else
+            {
+                // 将卡牌设置为最顶层（在所有其他卡牌之上）
+                transform.SetAsLastSibling();
+                
+                // 通知所有卡牌重新检测重叠状态
+                if (detector != null)
+                {
+                    // 等待一帧确保层级更新
+                    StartCoroutine(UpdateAllCardsNextFrame());
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 移动卡牌到容器B
+    /// </summary>
+    private void MoveCardToContainerB()
+    {
+        // 获取卡牌键
+        string cardKey = GetCardKey();
+        
+        // 获取卡牌模型
+        CardModel cardModel = GameApp.ControllerManager.GetControllerModel((int)ControllerType.Card) as CardModel;
+        if (cardModel == null)
+        {
+            Debug.LogError("找不到卡牌模型");
+            return;
+        }
+        
+        // 检查容器B是否已满
+        if (cardModel.ContainerBCards.Count >= 5)
+        {
+            Debug.LogWarning("容器B已满，最多只能放置5张卡牌");
+            return;
+        }
+        
+        // 保存原始父物体，用于还原
+        Transform originalParent = transform.parent;
+        
+        // 从容器A移除并添加到容器B
+        if (cardModel.RemoveCardFromContainerA(cardKey))
+        {
+            // 更新卡牌的父对象为容器B
+            transform.SetParent(containerB, false);
+            
+            // 重置在新父对象中的位置
+            GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            
+            // 添加到容器B集合中
+            cardModel.AddCardToContainerB(cardKey, this);
+            
+            Debug.Log($"卡牌 {cardKey} 已从容器A移动到容器B");
+        }
+        else
+        {
+            Debug.LogWarning($"卡牌 {cardKey} 不在容器A中，无法移动");
         }
     }
     

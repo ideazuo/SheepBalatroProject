@@ -33,4 +33,5 @@ public static class Defines
     public static readonly string CreateCard = "CreateCard";//创建卡牌
     public static readonly string GeneratePokerDecks = "GeneratePokerDecks";//生成扑克牌组
     public static readonly string RandomDealCards = "RandomDealCards";//随机发牌
+    public static readonly string SetContainerB = "SetContainerB";//设置容器B
 }

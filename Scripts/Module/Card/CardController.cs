@@ -42,6 +42,7 @@ public class CardController : BaseController
         RegisterFunc(Defines.CreateCard, CreateCard);
         RegisterFunc(Defines.GeneratePokerDecks, GeneratePokerDecks);
         RegisterFunc(Defines.RandomDealCards, RandomDealCards);
+        RegisterFunc(Defines.SetContainerB, SetContainerB);
     }
     
     /// <summary>
@@ -163,7 +164,8 @@ public class CardController : BaseController
     /// 随机从牌堆中抽取卡牌并克隆到指定区域
     /// </summary>
     /// <param name="args">
-    /// args[0]: Transform - 放置卡牌的容器
+    /// args[0]: Transform - 放置卡牌的容器A
+    /// args[1]: Transform - (可选) 容器B，用于移动选中的卡牌
     /// </param>
     private void RandomDealCards(object[] args)
     {
@@ -173,7 +175,14 @@ public class CardController : BaseController
             return;
         }
         
-        Transform container = (Transform)args[0];
+        Transform containerA = (Transform)args[0];
+        
+        // 如果提供了容器B，设置容器B引用
+        if (args.Length > 1 && args[1] is Transform containerB)
+        {
+            Card.SetContainerB(containerB);
+        }
+        
         Dictionary<string, CardInfo> cardDeck = cardModel.GetCardDeck();
         
         if (cardDeck == null || cardDeck.Count == 0)
@@ -183,10 +192,13 @@ public class CardController : BaseController
         }
         
         // 清空容器现有卡牌
-        for (int i = container.childCount - 1; i >= 0; i--)
+        for (int i = containerA.childCount - 1; i >= 0; i--)
         {
-            GameObject.Destroy(container.GetChild(i).gameObject);
+            GameObject.Destroy(containerA.GetChild(i).gameObject);
         }
+        
+        // 清空集合A中的卡牌
+        cardModel.ClearContainerA();
         
         // 加载Card预制体
         GameObject cardPrefab = Resources.Load<GameObject>("Models/Card");
@@ -197,7 +209,7 @@ public class CardController : BaseController
         }
         
         // 获取容器的尺寸
-        RectTransform containerRect = container as RectTransform;
+        RectTransform containerRect = containerA as RectTransform;
         if (containerRect == null)
         {
             Debug.LogError("容器必须有RectTransform组件");
@@ -225,7 +237,7 @@ public class CardController : BaseController
             cardKeys.RemoveAt(randomIndex);
             
             // 创建卡牌实例
-            GameObject cardObj = GameObject.Instantiate(cardPrefab, container);
+            GameObject cardObj = GameObject.Instantiate(cardPrefab, containerA);
             
             // 设置随机位置（确保卡牌不超出容器范围）
             RectTransform cardRect = cardObj.GetComponent<RectTransform>();
@@ -248,13 +260,37 @@ public class CardController : BaseController
             
             // 为卡牌添加重叠检测组件
             CardOverlapDetector overlapDetector = cardObj.AddComponent<CardOverlapDetector>();
-            overlapDetector.Initialize(container);
+            overlapDetector.Initialize(containerA);
+            
+            // 将卡牌添加到集合A中
+            string uniqueKey = card.GetCardKey();
+            cardModel.AddCardToContainerA(uniqueKey, card);
         }
         
         // 从字典中移除所有卡牌
         cardModel.ClearCardDeck();
         
-        Debug.Log($"成功发放所有卡牌到容器");
+        Debug.Log($"成功发放所有卡牌到容器A并添加到集合A中");
+    }
+    
+    /// <summary>
+    /// 设置容器B，用于接收被移动的卡牌
+    /// </summary>
+    /// <param name="args">
+    /// args[0]: Transform - 容器B对象
+    /// </param>
+    private void SetContainerB(object[] args)
+    {
+        if (args.Length < 1 || !(args[0] is Transform))
+        {
+            Debug.LogError("SetContainerB参数不足或类型错误");
+            return;
+        }
+        
+        Transform containerB = (Transform)args[0];
+        Card.SetContainerB(containerB);
+        
+        Debug.Log("已设置容器B引用");
     }
 }
 
