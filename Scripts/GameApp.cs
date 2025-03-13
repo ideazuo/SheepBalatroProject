@@ -13,6 +13,9 @@ public class GameApp : Singleton<GameApp>
 
     public static ViewManager ViewManager;//视图管理器
 
+    // 不再尝试在GameApp中持有CoroutineHelper的实例
+    // CoroutineHelper已经是单例，可以直接通过CoroutineHelper.instance访问
+
     public override void Init()
     {
         SoundManager = new SoundManager();
@@ -20,6 +23,11 @@ public class GameApp : Singleton<GameApp>
         ControllerManager = new ControllerManager();
 
         ViewManager = new ViewManager();
+        
+        // 初始化CoroutineHelper
+        Debug.Log("确保CoroutineHelper实例已创建");
+        // 只需要访问一次instance属性就会触发CoroutineHelper的创建
+        var helper = CoroutineHelper.instance;
     }
 
     public override void Update(float dt)

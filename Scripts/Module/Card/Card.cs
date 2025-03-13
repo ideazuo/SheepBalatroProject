@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,12 +7,17 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// 卡牌类，处理卡牌的基本属性和行为
 /// </summary>
-public class Card : MonoBehaviour, IPointerClickHandler
+public class Card : BaseView, IPointerClickHandler
 {
     /// <summary>
     /// 容器B对象
     /// </summary>
     private static Transform containerB;
+    
+    /// <summary>
+    /// 卡牌唯一ID
+    /// </summary>
+    private string uniqueId;
     
     /// <summary>
     /// 设置容器B引用
@@ -55,6 +60,9 @@ public class Card : MonoBehaviour, IPointerClickHandler
     {
         cardImage = GetComponent<Image>();
         
+        // 生成唯一ID
+        uniqueId = System.Guid.NewGuid().ToString();
+        
         // 确保卡牌可以接收射线检测
         if (!gameObject.GetComponent<CanvasRenderer>())
         {
@@ -73,10 +81,10 @@ public class Card : MonoBehaviour, IPointerClickHandler
     /// <summary>
     /// 生成卡牌的唯一键名
     /// </summary>
-    /// <returns>卡牌的唯一键名，格式为 "Suit_Rank"</returns>
+    /// <returns>卡牌的唯一键名，格式为 "Suit_Rank_UniqueID"</returns>
     public string GetCardKey()
     {
-        return $"{Suit}_{Rank}";
+        return $"{Suit}_{Rank}_{uniqueId}";
     }
     
     /// <summary>

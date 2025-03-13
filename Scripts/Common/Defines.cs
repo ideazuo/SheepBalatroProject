@@ -34,4 +34,6 @@ public static class Defines
     public static readonly string GeneratePokerDecks = "GeneratePokerDecks";//生成扑克牌组
     public static readonly string RandomDealCards = "RandomDealCards";//随机发牌
     public static readonly string SetContainerB = "SetContainerB";//设置容器B
+    public static readonly string EvaluatePokerHand = "EvaluatePokerHand";//评估扑克牌手牌
+    public static readonly string ClearContainerBWithDelay = "ClearContainerBWithDelay";//延迟清理容器B
 }

@@ -43,6 +43,8 @@ public class CardController : BaseController
         RegisterFunc(Defines.GeneratePokerDecks, GeneratePokerDecks);
         RegisterFunc(Defines.RandomDealCards, RandomDealCards);
         RegisterFunc(Defines.SetContainerB, SetContainerB);
+        RegisterFunc(Defines.EvaluatePokerHand, EvaluatePokerHand);
+        RegisterFunc(Defines.ClearContainerBWithDelay, ClearContainerBWithDelay);
     }
     
     /// <summary>
@@ -291,6 +293,133 @@ public class CardController : BaseController
         Card.SetContainerB(containerB);
         
         Debug.Log("已设置容器B引用");
+    }
+
+    /// <summary>
+    /// 评估容器B中的扑克牌牌型
+    /// </summary>
+    /// <param name="args">不需要参数</param>
+    /// <returns>当前检测到的牌型</returns>
+    private void EvaluatePokerHand(object[] args)
+    {
+        PokerHandType handType = cardModel.EvaluatePokerHand();
+        
+        // 当容器B中没有牌时，不输出任何信息
+        if (cardModel.ContainerBCards.Count == 0)
+        {
+            return;
+        }
+        
+        // 输出当前检测到的牌型
+        string handName = "";
+        switch (handType)
+        {
+            case PokerHandType.HighCard:
+                handName = "高牌";
+                break;
+            case PokerHandType.OnePair:
+                handName = "对子";
+                break;
+            case PokerHandType.TwoPair:
+                handName = "两对";
+                break;
+            case PokerHandType.ThreeOfAKind:
+                handName = "三条";
+                break;
+            case PokerHandType.Straight:
+                handName = "顺子";
+                break;
+            case PokerHandType.Flush:
+                handName = "同花";
+                break;
+            case PokerHandType.FullHouse:
+                handName = "葫芦";
+                break;
+            case PokerHandType.FourOfAKind:
+                handName = "四条";
+                break;
+            case PokerHandType.StraightFlush:
+                handName = "同花顺";
+                break;
+            case PokerHandType.FiveOfAKind:
+                handName = "五条";
+                break;
+            case PokerHandType.FlushFullHouse:
+                handName = "同花葫芦";
+                break;
+            case PokerHandType.FlushFiveOfAKind:
+                handName = "同花五条";
+                break;
+        }
+        
+        Debug.Log($"当前牌型: {handName}");
+    }
+
+    /// <summary>
+    /// 执行延迟清理容器B的逻辑
+    /// </summary>
+    /// <param name="args">不需要参数</param>
+    private void ClearContainerBWithDelay(object[] args)
+    {
+        // 实现延迟清理容器B的逻辑
+        Debug.Log("执行延迟清理容器B的逻辑");
+        
+        // 可选：延迟时间（默认1秒）
+        float delay = 1f;
+        if (args.Length > 0 && args[0] is float)
+        {
+            delay = (float)args[0];
+        }
+        
+        // 使用UnityEngine.Timer代替协程
+        CoroutineHelper.instance.DelayedAction(delay, () => {
+            // 获取当前的牌型信息（用于日志）
+            PokerHandType handType = cardModel.CurrentPokerHandType;
+            string handName = GetPokerHandTypeName(handType);
+            
+            // 清理并销毁容器B中的卡牌
+            cardModel.ClearContainerBWithDestroy();
+            
+            Debug.Log($"已完成牌型'{handName}'的评估，容器B中的卡牌已被移除并销毁");
+        });
+    }
+    
+    /// <summary>
+    /// 获取扑克牌型的中文名称
+    /// </summary>
+    /// <param name="handType">牌型枚举值</param>
+    /// <returns>牌型的中文名称</returns>
+    private string GetPokerHandTypeName(PokerHandType handType)
+    {
+        switch (handType)
+        {
+            case PokerHandType.HighCard:
+                return "高牌";
+            case PokerHandType.OnePair:
+                return "对子";
+            case PokerHandType.TwoPair:
+                return "两对";
+            case PokerHandType.ThreeOfAKind:
+                return "三条";
+            case PokerHandType.Straight:
+                return "顺子";
+            case PokerHandType.Flush:
+                return "同花";
+            case PokerHandType.FullHouse:
+                return "葫芦";
+            case PokerHandType.FourOfAKind:
+                return "四条";
+            case PokerHandType.StraightFlush:
+                return "同花顺";
+            case PokerHandType.FiveOfAKind:
+                return "五条";
+            case PokerHandType.FlushFullHouse:
+                return "同花葫芦";
+            case PokerHandType.FlushFiveOfAKind:
+                return "同花五条";
+            default:
+                return "未知牌型";
+        }
     }
 }
 
