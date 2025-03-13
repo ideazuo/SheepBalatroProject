@@ -11,11 +11,15 @@ public class GameApp : Singleton<GameApp>
 
     public static ControllerManager ControllerManager;//控制器管理器
 
+    public static ViewManager ViewManager;//视图管理器
+
     public override void Init()
     {
         SoundManager = new SoundManager();
 
         ControllerManager = new ControllerManager();
+
+        ViewManager = new ViewManager();
     }
 
     public override void Update(float dt)

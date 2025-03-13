@@ -214,11 +214,11 @@ public class ViewManager
         {
             // 视图未加载，从Resources加载预制体
             string type = ((ViewType)key).ToString(); // 类型字符串与脚本名称对应
-            GameObject uiObj = UnityEngine.Object.Instantiate(Resources.Load($"View/{viewInfo.PrefabName}"), viewInfo.parentTf) as GameObject;
+            GameObject uiObj = UnityEngine.Object.Instantiate(Resources.Load($"Views/{viewInfo.PrefabName}"), viewInfo.parentTf) as GameObject;
             
             if (uiObj == null)
             {
-                Debug.LogError($"没有找到该界面：/{viewInfo.PrefabName}");
+                Debug.LogError($"没有找到该界面：/Views/{viewInfo.PrefabName}");
             }
 
             Canvas canvas = uiObj.GetComponent<Canvas>();

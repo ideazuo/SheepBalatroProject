@@ -173,8 +173,44 @@ public class BaseView : MonoBehaviour,IBaseView
         {
             return m_cache_gos[res];
         }
-        m_cache_gos.Add(res, transform.Find(res).gameObject);
+        
+        Transform foundTransform = FindRecursively(transform, res);
+        if (foundTransform == null)
+        {
+            Debug.LogError($"在 {gameObject.name} 中找不到子物体：{res}");
+            return null;
+        }
+        
+        m_cache_gos.Add(res, foundTransform.gameObject);
         return m_cache_gos[res];
+    }
+
+    /// <summary>
+    /// 递归查找子物体
+    /// </summary>
+    /// <param name="parent">父级Transform</param>
+    /// <param name="name">要查找的物体名称</param>
+    /// <returns>找到的Transform，未找到则返回null</returns>
+    private Transform FindRecursively(Transform parent, string name)
+    {
+        // 先尝试直接查找
+        Transform child = parent.Find(name);
+        if (child != null)
+        {
+            return child;
+        }
+
+        // 递归查找所有子物体
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform result = FindRecursively(parent.GetChild(i), name);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -186,6 +222,17 @@ public class BaseView : MonoBehaviour,IBaseView
     public T Find<T>(string res) where T : Component
     {
         GameObject obj = Find(res);
-        return obj.GetComponent<T>();
+        if (obj == null)
+        {
+            return null;
+        }
+        
+        T component = obj.GetComponent<T>();
+        if (component == null)
+        {
+            Debug.LogError($"在 {gameObject.name} 的子物体 {res} 上找不到 {typeof(T).Name} 组件");
+        }
+        
+        return component;
     }
 }
