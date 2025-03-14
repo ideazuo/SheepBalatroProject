@@ -27,7 +27,9 @@ public class GameApp : Singleton<GameApp>
 
         ConfigManager = new ConfigManager();
 
+        // 创建并初始化CardManager
         CardManager = new CardManager();
+        CardManager.Init();
         
         // 初始化CoroutineHelper
         Debug.Log("确保CoroutineHelper实例已创建");

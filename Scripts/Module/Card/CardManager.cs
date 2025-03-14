@@ -34,14 +34,22 @@ public class CardManager
     /// </summary>
     public CardManager()
     {
+        // 构造函数留空，初始化工作在Init方法中进行
+    }
+    
+    /// <summary>
+    /// 初始化卡牌管理器
+    /// </summary>
+    public void Init()
+    {
         // 加载卡牌预制体
         cardPrefab = Resources.Load<GameObject>("Models/Card");
-
+        
         if (cardPrefab == null)
         {
             Debug.LogError("无法加载卡牌预制体：Models/Card");
         }
-
+        
         // 注册卡牌点击事件处理
         Card.OnCardClicked += OnCardClicked;
         CardOverlapDetector.OnOverlapStateChanged += OnCardOverlapStateChanged;
@@ -146,6 +154,10 @@ public class CardManager
         // 清空卡牌字典
         cardInstances.Clear();
         
+        // 通知控制器清空容器A的卡牌集合
+        object[] clearArgs = new object[] { };
+        GameApp.ControllerManager.ApplyFunc((int)ControllerType.Card, Defines.ClearContainerA, clearArgs);
+        
         // 获取容器的尺寸信息
         RectTransform containerRect = containerA as RectTransform;
         if (containerRect == null)
@@ -215,13 +227,6 @@ public class CardManager
         }
         
         string cardKey = card.GetCardKey();
-        
-        // 直接从容器A中检查并移除卡牌
-        if (!cardInstances.ContainsKey(cardKey))
-        {
-            Debug.LogWarning($"卡牌 {cardKey} 不在已知卡牌列表中，无法移动");
-            return false;
-        }
         
         // 通知Controller将卡牌从容器A移除
         object[] removeArgs = new object[] { cardKey };
@@ -301,6 +306,43 @@ public class CardManager
             object[] args = new object[] { card.GetCardKey() };
             GameApp.ControllerManager.ApplyFunc((int)ControllerType.Card, Defines.OnCardRevealed, args);
         }
+    }
+    
+    /// <summary>
+    /// 生成指定副数的扑克牌组
+    /// </summary>
+    /// <param name="deckCount">扑克牌副数</param>
+    /// <returns>生成的卡牌信息字典</returns>
+    public Dictionary<string, CardInfo> GeneratePokerDecks(int deckCount)
+    {
+        Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
+
+        // 为每副牌生成所有花色和点数的组合
+        for (int deck = 0; deck < deckCount; deck++)
+        {
+            foreach (CardSuit suit in System.Enum.GetValues(typeof(CardSuit)))
+            {
+                foreach (CardRank rank in System.Enum.GetValues(typeof(CardRank)))
+                {
+                    // 生成卡牌唯一键名，例如: "Spade_Ace_1" 表示第1副牌的黑桃A
+                    string cardKey = $"{suit}_{rank}_{deck}";
+                    
+                    // 创建卡牌信息对象
+                    CardInfo cardInfo = new CardInfo
+                    {
+                        Type = CardType.Poker,
+                        Suit = suit,
+                        Rank = rank
+                    };
+                    
+                    // 添加到字典
+                    cardDeck.Add(cardKey, cardInfo);
+                }
+            }
+        }
+        
+        Debug.Log($"成功生成 {deckCount} 副扑克牌，共 {cardDeck.Count} 张");
+        return cardDeck;
     }
     
     /// <summary>
