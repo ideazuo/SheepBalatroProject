@@ -83,19 +83,6 @@ public class Card : BaseView, IPointerClickHandler
         // 生成唯一ID
         uniqueId = System.Guid.NewGuid().ToString();
         
-        // 确保卡牌可以接收射线检测
-        if (!gameObject.GetComponent<CanvasRenderer>())
-        {
-            gameObject.AddComponent<CanvasRenderer>();
-        }
-        
-        // UI 元素需要有 GraphicRaycaster 处理点击
-        Canvas rootCanvas = GetComponentInParent<Canvas>();
-        if (rootCanvas != null && rootCanvas.GetComponent<GraphicRaycaster>() == null)
-        {
-            rootCanvas.gameObject.AddComponent<GraphicRaycaster>();
-            Debug.Log("已添加 GraphicRaycaster 到 Canvas");
-        }
     }
     
     /// <summary>
@@ -179,7 +166,7 @@ public class Card : BaseView, IPointerClickHandler
             Debug.LogError($"找不到卡牌图片: Images/{fileName}");
         }
     }
-    
+
     /// <summary>
     /// 处理 UI 元素点击
     /// </summary>
@@ -187,7 +174,7 @@ public class Card : BaseView, IPointerClickHandler
     {
         // 获取重叠检测组件
         CardOverlapDetector detector = GetComponent<CardOverlapDetector>();
-        
+
         // 在点击时立即进行重叠检测
         if (detector != null)
         {
@@ -198,11 +185,11 @@ public class Card : BaseView, IPointerClickHandler
                 return;
             }
         }
-        
+
         // 如果卡牌不可交互，忽略点击
         if (!isInteractable)
             return;
-            
+
         if (Type == CardType.Poker)
         {
             string suitName = "";
@@ -221,7 +208,7 @@ public class Card : BaseView, IPointerClickHandler
                     suitName = "黑桃";
                     break;
             }
-            
+
             string rankName = "";
             switch (Rank)
             {
@@ -241,14 +228,14 @@ public class Card : BaseView, IPointerClickHandler
                     rankName = ((int)Rank).ToString();
                     break;
             }
-            
+
             Debug.Log($"点击了{suitName}{rankName}");
-            
+
             // 触发卡牌点击事件，由Controller处理后续业务逻辑
             OnCardClicked?.Invoke(this);
         }
     }
-    
+
     /// <summary>
     /// 在下一帧更新所有卡牌状态
     /// </summary>
@@ -283,6 +270,7 @@ public class Card : BaseView, IPointerClickHandler
     {
         yield return null; // 等待下一帧
         
+        //备注一下，这里通过Unity加载层级来找所有卡牌不太合适，应该从当前牌堆的数组里面去找Card对象
         Transform container = transform.parent;
         if (container != null)
         {
