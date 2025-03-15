@@ -7,6 +7,7 @@ using UnityEngine;
 /// </summary>
 public enum PokerHandType
 {
+    Null,           // 无牌
     HighCard,       // 高牌
     OnePair,        // 对子
     TwoPair,        // 两对

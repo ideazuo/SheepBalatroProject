@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,12 +24,22 @@ public class CardsCollectionModel : BaseModel
     /// 当前检测到的扑克牌手牌类型
     /// </summary>
     public PokerHandType CurrentPokerHandType { get; private set; } = PokerHandType.HighCard;
-    
+
+    /// <summary>
+    /// 手牌类型的改变事件
+    /// </summary>
+    public static event Action<PokerHandType> HandTypeChanged;
+
     /// <summary>
     /// 获取容器A中的卡牌集合
     /// </summary>
     public Dictionary<string, Card> ContainerACards => containerACards;
-    
+
+    /// <summary>
+    /// 容器A的改变事件
+    /// </summary>
+    public static event Action<int> ContainerACardsCountChanged;
+
     /// <summary>
     /// 获取容器B中的卡牌集合
     /// </summary>
@@ -62,9 +73,10 @@ public class CardsCollectionModel : BaseModel
         if (!containerACards.ContainsKey(key))
         {
             containerACards.Add(key, card);
+            OnContainerACardsCountChanged();
         }
     }
-    
+
     /// <summary>
     /// 从容器A移除卡牌
     /// </summary>
@@ -74,11 +86,21 @@ public class CardsCollectionModel : BaseModel
     {
         if (containerACards.ContainsKey(key))
         {
-            return containerACards.Remove(key);
+            bool result = containerACards.Remove(key);
+            if (result)
+            {
+                OnContainerACardsCountChanged();
+            }
+            return result;
         }
         return false;
     }
-    
+
+    private void OnContainerACardsCountChanged()
+    {
+        ContainerACardsCountChanged?.Invoke(containerACards.Count);
+    }
+
     /// <summary>
     /// 向容器B添加卡牌，最多5张
     /// </summary>
@@ -128,7 +150,7 @@ public class CardsCollectionModel : BaseModel
             else
             {
                 // 如果没有卡牌，重置为高牌
-                CurrentPokerHandType = PokerHandType.HighCard;
+                CurrentPokerHandType = PokerHandType.Null;
             }
             
             return result;
@@ -151,7 +173,7 @@ public class CardsCollectionModel : BaseModel
     {
         containerBCards.Clear();
         // 重置为高牌
-        CurrentPokerHandType = PokerHandType.HighCard;
+        CurrentPokerHandType = PokerHandType.Null;
     }
     
     /// <summary>
@@ -166,8 +188,9 @@ public class CardsCollectionModel : BaseModel
         containerBCards.Clear();
         
         // 重置为高牌
-        CurrentPokerHandType = PokerHandType.HighCard;
-        
+        CurrentPokerHandType = PokerHandType.Null;
+        HandTypeChanged?.Invoke(CurrentPokerHandType);
+
         // 销毁所有卡牌对象
         foreach (Card card in cardsToDestroy)
         {
@@ -186,10 +209,10 @@ public class CardsCollectionModel : BaseModel
     /// <returns>检测到的扑克牌手牌类型</returns>
     public PokerHandType EvaluatePokerHand()
     {
-        // 如果容器B中没有卡牌，返回高牌
+        // 如果容器B中没有卡牌，返回Null
         if (containerBCards.Count == 0)
         {
-            CurrentPokerHandType = PokerHandType.HighCard;
+            CurrentPokerHandType = PokerHandType.Null;
             return CurrentPokerHandType;
         }
         
@@ -270,6 +293,7 @@ public class CardsCollectionModel : BaseModel
             CurrentPokerHandType = PokerHandType.HighCard;
             Debug.Log("高牌");
         }
+
         
         // 检查容器B是否已满5张牌，如果是，则调用控制器进行延迟清理
         if (containerBCards.Count >= 5)
@@ -277,7 +301,8 @@ public class CardsCollectionModel : BaseModel
             // 延迟清理容器B中的卡牌，让玩家有时间看到结果
             GameApp.ControllerManager.ApplyFunc((int)ControllerType.Card, Defines.ClearContainerBWithDelay, new object[0]);
         }
-        
+
+        HandTypeChanged?.Invoke(CurrentPokerHandType);
         return CurrentPokerHandType;
     }
     
