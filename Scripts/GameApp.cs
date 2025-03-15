@@ -15,8 +15,6 @@ public class GameApp : Singleton<GameApp>
 
     public static ConfigManager ConfigManager;//配置表管理器
 
-    public static CardManager CardManager;//卡牌管理器
-
     public override void Init()
     {
         SoundManager = new SoundManager();
@@ -26,10 +24,6 @@ public class GameApp : Singleton<GameApp>
         ViewManager = new ViewManager();
 
         ConfigManager = new ConfigManager();
-
-        // 创建并初始化CardManager
-        CardManager = new CardManager();
-        CardManager.Init();
         
         // 初始化CoroutineHelper
         Debug.Log("确保CoroutineHelper实例已创建");

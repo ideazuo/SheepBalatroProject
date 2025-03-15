@@ -7,6 +7,7 @@ using System.Linq;
 /// <summary>
 /// 卡牌控制器，负责创建和管理卡牌，处理卡牌相关的交互逻辑
 /// 实现了MVC架构中的Controller层，负责协调Model和View层之间的通信
+/// 整合了卡牌管理器的所有功能，直接管理View层元素
 /// </summary>
 public class CardController : BaseController
 {
@@ -14,6 +15,26 @@ public class CardController : BaseController
     /// 卡牌模型，存储卡牌数据和相关业务逻辑
     /// </summary>
     private CardModel cardModel;
+    
+    /// <summary>
+    /// 所有已创建的卡牌字典，键为唯一ID，值为卡牌对象
+    /// </summary>
+    private Dictionary<string, Card> cardInstances = new Dictionary<string, Card>();
+    
+    /// <summary>
+    /// 卡牌预制体引用
+    /// </summary>
+    private GameObject cardPrefab;
+    
+    /// <summary>
+    /// 容器A - 存放初始卡牌的容器
+    /// </summary>
+    private Transform containerA;
+    
+    /// <summary>
+    /// 容器B - 存放选中卡牌的容器
+    /// </summary>
+    private Transform containerB;
     
     /// <summary>
     /// 构造函数，初始化卡牌控制器
@@ -33,6 +54,18 @@ public class CardController : BaseController
     {
         base.Init();
         InitModuleEvent();
+        
+        // 加载卡牌预制体
+        cardPrefab = Resources.Load<GameObject>("Models/Card");
+        
+        if (cardPrefab == null)
+        {
+            Debug.LogError("无法加载卡牌预制体：Models/Card");
+        }
+        
+        // 注册卡牌点击事件处理
+        Card.OnCardClicked += OnCardClicked;
+        CardOverlapDetector.OnOverlapStateChanged += OnCardOverlapStateChanged;
     }
     
     /// <summary>
@@ -40,6 +73,13 @@ public class CardController : BaseController
     /// </summary>
     public override void Destroy()
     {
+        // 取消事件订阅
+        Card.OnCardClicked -= OnCardClicked;
+        CardOverlapDetector.OnOverlapStateChanged -= OnCardOverlapStateChanged;
+        
+        // 销毁所有卡牌
+        DestroyAllCards();
+        
         base.Destroy();
     }
     
@@ -68,6 +108,22 @@ public class CardController : BaseController
     }
     
     /// <summary>
+    /// 设置卡牌容器
+    /// </summary>
+    /// <param name="containerA">容器A - 存放初始卡牌</param>
+    /// <param name="containerB">容器B - 存放选中卡牌</param>
+    public void SetContainers(Transform containerA, Transform containerB = null)
+    {
+        this.containerA = containerA;
+        
+        if (containerB != null)
+        {
+            this.containerB = containerB;
+            Card.SetContainerB(containerB);
+        }
+    }
+    
+    /// <summary>
     /// 清空容器A中的卡牌集合
     /// </summary>
     /// <param name="args">不需要参数</param>
@@ -76,9 +132,9 @@ public class CardController : BaseController
         cardModel.ClearContainerA();
         Debug.Log("清空了容器A中的卡牌集合");
     }
-
+    
     /// <summary>
-    /// 创建卡牌实例并初始化其属性
+    /// 创建卡牌实例
     /// </summary>
     /// <param name="args">
     /// args[0]: CardType - 卡牌类型
@@ -98,48 +154,105 @@ public class CardController : BaseController
             return;
         }
 
+        CardSuit suit = (CardSuit)args[1];
+        CardRank rank = (CardRank)args[2];
         Transform parent = (Transform)args[3];
-
-        // 加载卡牌预制体
-        GameObject cardPrefab = Resources.Load<GameObject>("Models/Card");
+        
+        // 创建卡牌并返回
+        Card card = CreateCardInstance(suit, rank, parent);
+    }
+    
+    /// <summary>
+    /// 创建卡牌实例
+    /// </summary>
+    /// <param name="suit">卡牌花色</param>
+    /// <param name="rank">卡牌点数</param>
+    /// <param name="parent">父物体</param>
+    /// <returns>创建的卡牌对象</returns>
+    private Card CreateCardInstance(CardSuit suit, CardRank rank, Transform parent)
+    {
         if (cardPrefab == null)
         {
-            Debug.LogError("找不到Card预制体：Resources/Models/Card");
-            return;
+            cardPrefab = Resources.Load<GameObject>("Models/Card");
+            
+            if (cardPrefab == null)
+            {
+                Debug.LogError("无法加载卡牌预制体：Models/Card");
+                return null;
+            }
         }
-
-        // 实例化卡牌对象
+        
+        // 创建卡牌实例
         GameObject cardObj = GameObject.Instantiate(cardPrefab, parent);
-        if (cardObj == null)
-        {
-            Debug.LogError("创建Card预制体失败");
-            return;
-        }
-
-        // 确保卡牌有Image组件用于显示
+        
+        // 确保卡牌有Image组件
         Image cardImage = cardObj.GetComponent<Image>();
         if (cardImage == null)
         {
             cardImage = cardObj.AddComponent<Image>();
-            Debug.Log("已添加 Image 组件到卡牌");
         }
-
+        
         // 获取或添加Card组件
         Card card = cardObj.GetComponent<Card>();
         if (card == null)
         {
             card = cardObj.AddComponent<Card>();
         }
-
-        // 设置属性
-            CardSuit suit = (CardSuit)args[1];
-            CardRank rank = (CardRank)args[2];
-            card.SetCardInfo(suit, rank);
-
-        // 将创建的卡牌添加到模型中
-        //cardModel.AddCard(card);
+        
+        // 设置卡牌信息
+        card.SetCardInfo(suit, rank);
+        
+        // 添加重叠检测组件
+        CardOverlapDetector detector = cardObj.GetComponent<CardOverlapDetector>();
+        if (detector == null)
+        {
+            detector = cardObj.AddComponent<CardOverlapDetector>();
+            detector.Initialize(parent);
+        }
+        
+        // 添加到卡牌字典
+        string cardKey = card.GetCardKey();
+        cardInstances[cardKey] = card;
+        
+        return card;
     }
+    
+    /// <summary>
+    /// 生成指定副数的扑克牌组
+    /// </summary>
+    /// <param name="deckCount">扑克牌副数</param>
+    /// <returns>生成的卡牌信息字典</returns>
+    public Dictionary<string, CardInfo> GeneratePokerDecksInternal(int deckCount)
+    {
+        Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
 
+        // 为每副牌生成所有花色和点数的组合
+        for (int deck = 0; deck < deckCount; deck++)
+        {
+            foreach (CardSuit suit in System.Enum.GetValues(typeof(CardSuit)))
+            {
+                foreach (CardRank rank in System.Enum.GetValues(typeof(CardRank)))
+                {
+                    // 生成卡牌唯一键名，例如: "Spade_Ace_1" 表示第1副牌的黑桃A
+                    string cardKey = $"{suit}_{rank}_{deck}";
+                    
+                    // 创建卡牌信息对象
+                    CardInfo cardInfo = new CardInfo
+                    {
+                        Suit = suit,
+                        Rank = rank
+                    };
+                    
+                    // 添加到字典
+                    cardDeck.Add(cardKey, cardInfo);
+                }
+            }
+        }
+        
+        Debug.Log($"成功生成 {deckCount} 副扑克牌，共 {cardDeck.Count} 张");
+        return cardDeck;
+    }
+    
     /// <summary>
     /// 生成指定副数的扑克牌并存储在字典中
     /// </summary>
@@ -161,11 +274,97 @@ public class CardController : BaseController
 
         int deckCount = (int)args[0];
         
-        // 使用CardManager生成牌组
-        Dictionary<string, CardInfo> cardDeck = GameApp.CardManager.GeneratePokerDecks(deckCount);
+        // 生成牌组
+        Dictionary<string, CardInfo> cardDeck = GeneratePokerDecksInternal(deckCount);
 
         // 将生成的牌组添加到模型中
         cardModel.SetCardDeck(cardDeck);
+    }
+    
+    /// <summary>
+    /// 随机发牌到容器A
+    /// </summary>
+    /// <param name="cardDeck">卡牌信息字典</param>
+    private void DealCardsToContainerA(Dictionary<string, CardInfo> cardDeck)
+    {
+        if (containerA == null)
+        {
+            Debug.LogError("容器A未设置，无法发牌");
+            return;
+        }
+        
+        if (cardDeck == null || cardDeck.Count == 0)
+        {
+            Debug.LogError("卡牌集合为空，无法发牌");
+            return;
+        }
+        
+        // 清空容器A现有卡牌
+        for (int i = containerA.childCount - 1; i >= 0; i--)
+        {
+            GameObject.Destroy(containerA.GetChild(i).gameObject);
+        }
+        
+        // 清空卡牌字典
+        cardInstances.Clear();
+        
+        // 通知控制器清空容器A的卡牌集合
+        object[] clearArgs = new object[] { };
+        ClearContainerA(clearArgs);
+        
+        // 获取容器的尺寸信息
+        RectTransform containerRect = containerA as RectTransform;
+        if (containerRect == null)
+        {
+            Debug.LogError("容器必须有RectTransform组件");
+            return;
+        }
+        
+        // 计算容器的宽高
+        float containerWidth = containerRect.rect.width;
+        float containerHeight = containerRect.rect.height;
+        
+        // 加载预制体，获取卡牌尺寸
+        if (cardPrefab == null)
+        {
+            cardPrefab = Resources.Load<GameObject>("Models/Card");
+        }
+        
+        RectTransform cardRectTemp = cardPrefab.GetComponent<RectTransform>();
+        float cardWidth = cardRectTemp.rect.width;
+        float cardHeight = cardRectTemp.rect.height;
+        
+        // 准备随机发牌
+        List<string> cardKeys = new List<string>(cardDeck.Keys);
+        System.Random random = new System.Random();
+        
+        // 逐一创建所有卡牌
+        while (cardKeys.Count > 0)
+        {
+            // 随机抽取一张牌
+            int randomIndex = random.Next(cardKeys.Count);
+            string cardKey = cardKeys[randomIndex];
+            CardInfo cardInfo = cardDeck[cardKey];
+            cardKeys.RemoveAt(randomIndex);
+            
+            // 创建卡牌
+            Card card = CreateCardInstance(cardInfo.Suit, cardInfo.Rank, containerA);
+            
+            // 设置随机位置
+            RectTransform cardRect = card.GetComponent<RectTransform>();
+            float maxX = (containerWidth - cardWidth) / 2;
+            float maxY = (containerHeight - cardHeight) / 2;
+            float randomX = Random.Range(-maxX, maxX);
+            float randomY = Random.Range(-maxY, maxY);
+            
+            cardRect.anchoredPosition = new Vector2(randomX, randomY);
+            
+            // 添加到模型
+            object[] args = new object[] { card.GetCardKey(), card };
+            AddCardToContainerA(args);
+        }
+        
+        Debug.Log($"成功发放所有卡牌到容器A");
     }
     
     /// <summary>
@@ -193,12 +392,12 @@ public class CardController : BaseController
         if (args.Length > 1 && args[1] is Transform containerB)
         {
             // 设置容器
-            GameApp.CardManager.SetContainers(containerA, containerB);
+            SetContainers(containerA, containerB);
         }
         else
         {
             // 只设置容器A
-            GameApp.CardManager.SetContainers(containerA);
+            SetContainers(containerA);
         }
         
         // 获取卡牌集合
@@ -211,11 +410,92 @@ public class CardController : BaseController
             return;
         }
         
-        // 委托给CardManager处理发牌逻辑
-        GameApp.CardManager.DealCardsToContainerA(cardDeck);
+        // 处理发牌逻辑
+        DealCardsToContainerA(cardDeck);
         
         // 清空临时卡牌集合
         cardModel.ClearCardDeck();
+    }
+    
+    /// <summary>
+    /// 将卡牌从容器A移动到容器B
+    /// </summary>
+    /// <param name="card">要移动的卡牌</param>
+    /// <returns>是否移动成功</returns>
+    public bool MoveCardToContainerB(Card card)
+    {
+        if (containerB == null)
+        {
+            Debug.LogWarning("容器B未设置，无法移动卡牌");
+            return false;
+        }
+        
+        string cardKey = card.GetCardKey();
+        
+        // 通知Controller将卡牌从容器A移除
+        object[] removeArgs = new object[] { cardKey };
+        RemoveCardFromContainerAWithReturn(removeArgs);
+            
+        // 更新视图层：移动卡牌到容器B
+        card.MoveToContainer(containerB);
+        
+        // 通知Controller添加卡牌到容器B
+        object[] addArgs = new object[] { cardKey, card };
+        AddCardToContainerB(addArgs);
+        
+        Debug.Log($"卡牌 {cardKey} 已从容器A移动到容器B");
+        return true;
+    }
+    
+    /// <summary>
+    /// 处理卡牌点击事件
+    /// </summary>
+    /// <param name="card">被点击的卡牌</param>
+    private void OnCardClicked(Card card)
+    {
+        if (containerB != null)
+        {
+            // 直接检查容器B的子物体数量
+            int containerBCount = containerB.childCount;
+            if (containerBCount >= 5)
+            {
+                Debug.LogWarning("容器B已满，最多只能放置5张卡牌");
+                return;
+            }
+            
+            // 移动卡牌到容器B
+            MoveCardToContainerB(card);
+        }
+        else
+        {
+            // 将卡牌设为最顶层
+            card.SetAsTopMost();
+            
+            // 更新所有卡牌重叠状态
+            card.UpdateAllCardsState();
+        }
+    }
+    
+    /// <summary>
+    /// 处理卡牌重叠状态变化
+    /// </summary>
+    /// <param name="card">卡牌对象</param>
+    /// <param name="isOverlapped">是否被遮挡</param>
+    private void OnCardOverlapStateChanged(Card card, bool isOverlapped)
+    {
+        // 状态变化的处理逻辑
+        if (isOverlapped)
+        {
+            // 通知Controller卡牌被遮挡
+            object[] args = new object[] { card.GetCardKey() };
+            OnCardOverlapped(args);
+        }
+        else
+        {
+            // 通知Controller卡牌取消遮挡
+            object[] args = new object[] { card.GetCardKey() };
+            OnCardRevealed(args);
+        }
     }
     
     /// <summary>
@@ -237,6 +517,7 @@ public class CardController : BaseController
         }
         
         Transform containerB = (Transform)args[0];
+        this.containerB = containerB;
         Card.SetContainerB(containerB);
         
         Debug.Log("已设置容器B引用");
@@ -414,6 +695,35 @@ public class CardController : BaseController
     {
         int count = cardModel.ContainerBCards.Count;
         Debug.Log($"容器B中的卡牌数量: {count}");
+    }
+    
+    /// <summary>
+    /// 根据键获取卡牌
+    /// </summary>
+    /// <param name="cardKey">卡牌键</param>
+    /// <returns>卡牌对象，若不存在则返回null</returns>
+    public Card GetCard(string cardKey)
+    {
+        if (cardInstances.TryGetValue(cardKey, out Card card))
+        {
+            return card;
+        }
+        return null;
+    }
+    
+    /// <summary>
+    /// 销毁所有卡牌
+    /// </summary>
+    public void DestroyAllCards()
+    {
+        foreach (var card in cardInstances.Values)
+        {
+            if (card != null && card.gameObject != null)
+            {
+                GameObject.Destroy(card.gameObject);
+            }
+        }
+        cardInstances.Clear();
     }
     
     /// <summary>
