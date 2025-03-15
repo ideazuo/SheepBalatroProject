@@ -17,9 +17,19 @@ public class CardController : BaseController
     private CardModel cardModel;
     
     /// <summary>
+    /// 卡牌集合模型，管理容器A和容器B中的卡牌集合
+    /// </summary>
+    private CardsCollectionModel cardsCollectionModel;
+    
+    /// <summary>
     /// 所有已创建的卡牌字典，键为唯一ID，值为卡牌对象
     /// </summary>
     private Dictionary<string, Card> cardInstances = new Dictionary<string, Card>();
+    
+    /// <summary>
+    /// 卡牌牌组字典，键为唯一ID，值为卡牌信息
+    /// </summary>
+    private Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
     
     /// <summary>
     /// 卡牌预制体引用
@@ -45,6 +55,9 @@ public class CardController : BaseController
         // 初始化卡牌模型
         cardModel = new CardModel();
         SetModel(cardModel);
+        
+        // 初始化卡牌集合模型
+        cardsCollectionModel = new CardsCollectionModel();
     }
     
     /// <summary>
@@ -80,6 +93,9 @@ public class CardController : BaseController
         // 销毁所有卡牌
         DestroyAllCards();
         
+        // 清空牌组
+        cardDeck.Clear();
+        
         base.Destroy();
     }
     
@@ -90,7 +106,7 @@ public class CardController : BaseController
     {
         base.InitModuleEvent();
         // 注册各种卡牌操作的回调函数
-        RegisterFunc(Defines.CreateCard, CreateCard);
+        RegisterFunc(Defines.CreateCard, CreatePokerCard);
         RegisterFunc(Defines.GeneratePokerDecks, GeneratePokerDecks);
         RegisterFunc(Defines.RandomDealCards, RandomDealCards);
         RegisterFunc(Defines.SetContainerB, SetContainerB);
@@ -129,7 +145,7 @@ public class CardController : BaseController
     /// <param name="args">不需要参数</param>
     private void ClearContainerA(object[] args)
     {
-        cardModel.ClearContainerA();
+        cardsCollectionModel.ClearContainerA();
         Debug.Log("清空了容器A中的卡牌集合");
     }
     
@@ -137,26 +153,25 @@ public class CardController : BaseController
     /// 创建卡牌实例
     /// </summary>
     /// <param name="args">
-    /// args[0]: CardType - 卡牌类型
-    /// args[1]: CardSuit - 卡牌花色（扑克牌类型时有效）
-    /// args[2]: CardRank - 卡牌点数（扑克牌类型时有效）
-    /// args[3]: Transform - 父物体
+    /// args[0]: CardSuit - 卡牌花色（扑克牌类型时有效）
+    /// args[1]: CardRank - 卡牌点数（扑克牌类型时有效）
+    /// args[2]: Transform - 父物体
     /// </param>
     /// <remarks>
-    /// 该方法加载卡牌预制体并实例化，设置卡牌属性，并将其添加到模型中
+    /// 该方法加载卡牌预制体并实例化，设置卡牌属性
     /// </remarks>
-    private void CreateCard(object[] args)
+    private void CreatePokerCard(object[] args)
     {
         // 检查参数
-        if (args.Length < 4)
+        if (args.Length < 3)
         {
             Debug.LogError("CreateCard参数不足");
             return;
         }
 
-        CardSuit suit = (CardSuit)args[1];
-        CardRank rank = (CardRank)args[2];
-        Transform parent = (Transform)args[3];
+        CardSuit suit = (CardSuit)args[0];
+        CardRank rank = (CardRank)args[1];
+        Transform parent = (Transform)args[2];
         
         // 创建卡牌并返回
         Card card = CreateCardInstance(suit, rank, parent);
@@ -218,13 +233,28 @@ public class CardController : BaseController
     }
     
     /// <summary>
-    /// 生成指定副数的扑克牌组
+    /// 生成指定副数的扑克牌并存储在字典中
     /// </summary>
-    /// <param name="deckCount">扑克牌副数</param>
-    /// <returns>生成的卡牌信息字典</returns>
-    public Dictionary<string, CardInfo> GeneratePokerDecksInternal(int deckCount)
+    /// <param name="args">
+    /// args[0]: int - 扑克牌副数
+    /// </param>
+    /// <remarks>
+    /// 该方法根据指定的副数生成完整的扑克牌组，每副包含所有花色和点数的组合
+    /// 生成的卡牌信息存储在卡牌控制器中，供后续使用
+    /// </remarks>
+    private void GeneratePokerDecks(object[] args)
     {
-        Dictionary<string, CardInfo> cardDeck = new Dictionary<string, CardInfo>();
+        // 检查参数
+        if (args.Length < 1)
+        {
+            Debug.LogError("GeneratePokerDecks参数不足");
+            return;
+        }
+
+        int deckCount = (int)args[0];
+        
+        // 清空现有牌组
+        cardDeck.Clear();
 
         // 为每副牌生成所有花色和点数的组合
         for (int deck = 0; deck < deckCount; deck++)
@@ -250,42 +280,12 @@ public class CardController : BaseController
         }
         
         Debug.Log($"成功生成 {deckCount} 副扑克牌，共 {cardDeck.Count} 张");
-        return cardDeck;
-    }
-    
-    /// <summary>
-    /// 生成指定副数的扑克牌并存储在字典中
-    /// </summary>
-    /// <param name="args">
-    /// args[0]: int - 扑克牌副数
-    /// </param>
-    /// <remarks>
-    /// 该方法根据指定的副数生成完整的扑克牌组，每副包含所有花色和点数的组合
-    /// 生成的卡牌信息存储在卡牌模型中，供后续使用
-    /// </remarks>
-    private void GeneratePokerDecks(object[] args)
-    {
-        // 检查参数
-        if (args.Length < 1)
-        {
-            Debug.LogError("GeneratePokerDecks参数不足");
-            return;
-        }
-
-        int deckCount = (int)args[0];
-        
-        // 生成牌组
-        Dictionary<string, CardInfo> cardDeck = GeneratePokerDecksInternal(deckCount);
-
-        // 将生成的牌组添加到模型中
-        cardModel.SetCardDeck(cardDeck);
     }
     
     /// <summary>
     /// 随机发牌到容器A
     /// </summary>
-    /// <param name="cardDeck">卡牌信息字典</param>
-    private void DealCardsToContainerA(Dictionary<string, CardInfo> cardDeck)
+    private void DealCardsToContainerA()
     {
         if (containerA == null)
         {
@@ -309,8 +309,7 @@ public class CardController : BaseController
         cardInstances.Clear();
         
         // 通知控制器清空容器A的卡牌集合
-        object[] clearArgs = new object[] { };
-        ClearContainerA(clearArgs);
+        ClearContainerA(new object[] { });
         
         // 获取容器的尺寸信息
         RectTransform containerRect = containerA as RectTransform;
@@ -375,7 +374,7 @@ public class CardController : BaseController
     /// args[1]: Transform - (可选) 容器B，用于移动选中的卡牌
     /// </param>
     /// <remarks>
-    /// 该方法将参数传递给CardManager处理，控制器处理模型数据
+    /// 该方法处理随机发牌的逻辑
     /// </remarks>
     private void RandomDealCards(object[] args)
     {
@@ -400,9 +399,6 @@ public class CardController : BaseController
             SetContainers(containerA);
         }
         
-        // 获取卡牌集合
-        Dictionary<string, CardInfo> cardDeck = cardModel.GetCardDeck();
-        
         // 检查卡牌集合是否为空
         if (cardDeck == null || cardDeck.Count == 0)
         {
@@ -411,10 +407,10 @@ public class CardController : BaseController
         }
         
         // 处理发牌逻辑
-        DealCardsToContainerA(cardDeck);
+        DealCardsToContainerA();
         
         // 清空临时卡牌集合
-        cardModel.ClearCardDeck();
+        cardDeck.Clear();
     }
     
     /// <summary>
@@ -534,10 +530,10 @@ public class CardController : BaseController
     private void EvaluatePokerHand(object[] args)
     {
         // 评估扑克牌型
-        PokerHandType handType = cardModel.EvaluatePokerHand();
+        PokerHandType handType = cardsCollectionModel.EvaluatePokerHand();
         
         // 当容器B中没有牌时，不输出任何信息
-        if (cardModel.ContainerBCards.Count == 0)
+        if (cardsCollectionModel.ContainerBCards.Count == 0)
         {
             return;
         }
@@ -572,11 +568,11 @@ public class CardController : BaseController
         // 使用CoroutineHelper实现延迟操作
         CoroutineHelper.instance.DelayedAction(delay, () => {
             // 获取当前的牌型信息（用于日志）
-            PokerHandType handType = cardModel.CurrentPokerHandType;
+            PokerHandType handType = cardsCollectionModel.CurrentPokerHandType;
             string handName = GetPokerHandTypeName(handType);
             
             // 清理并销毁容器B中的卡牌
-            cardModel.ClearContainerBWithDestroy();
+            cardsCollectionModel.ClearContainerBWithDestroy();
             
             Debug.Log($"已完成牌型'{handName}'的评估，容器B中的卡牌已被移除并销毁");
         });
@@ -641,7 +637,7 @@ public class CardController : BaseController
         string cardKey = (string)args[0];
         Card card = (Card)args[1];
         
-        cardModel.AddCardToContainerA(cardKey, card);
+        cardsCollectionModel.AddCardToContainerA(cardKey, card);
     }
     
     /// <summary>
@@ -660,7 +656,7 @@ public class CardController : BaseController
         }
         
         string cardKey = (string)args[0];
-        bool success = cardModel.RemoveCardFromContainerA(cardKey);
+        bool success = cardsCollectionModel.RemoveCardFromContainerA(cardKey);
         
         Debug.Log($"从容器A移除卡牌 {cardKey}: {(success ? "成功" : "失败")}");
     }
@@ -683,7 +679,7 @@ public class CardController : BaseController
         string cardKey = (string)args[0];
         Card card = (Card)args[1];
         
-        cardModel.AddCardToContainerB(cardKey, card);
+        cardsCollectionModel.AddCardToContainerB(cardKey, card);
     }
     
     /// <summary>
@@ -693,7 +689,7 @@ public class CardController : BaseController
     /// <returns>容器B中卡牌数量</returns>
     private void GetContainerBCount(object[] args)
     {
-        int count = cardModel.ContainerBCards.Count;
+        int count = cardsCollectionModel.ContainerBCards.Count;
         Debug.Log($"容器B中的卡牌数量: {count}");
     }
     
