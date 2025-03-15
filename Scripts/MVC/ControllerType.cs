@@ -12,5 +12,5 @@ public enum ControllerType
     Loading,
     Level,
     Fight,
-    Card
+    Card,
 }

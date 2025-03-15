@@ -29,6 +29,10 @@ public class GameApp : Singleton<GameApp>
         Debug.Log("确保CoroutineHelper实例已创建");
         // 只需要访问一次instance属性就会触发CoroutineHelper的创建
         var helper = CoroutineHelper.instance;
+        
+        // 初始化GameLifecycleManager
+        Debug.Log("初始化GameLifecycleManager");
+        var lifecycleManager = GameLifecycleManager.Instance;
     }
 
     public override void Update(float dt)

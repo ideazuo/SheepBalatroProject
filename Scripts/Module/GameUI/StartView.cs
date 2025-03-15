@@ -37,6 +37,9 @@ public class StartView : BaseView
         {
             okCallback = delegate ()
             {
+                // 在退出前保存所有游戏数据
+                GameLifecycleManager.Instance.SaveAllGameData();
+                
                 Application.Quit();//退出游戏
             },
             MsgTxt = "确定退出游戏吗？",

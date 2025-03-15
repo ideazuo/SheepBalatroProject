@@ -31,6 +31,11 @@ public class CardsCollectionModel : BaseModel
     public static event Action<PokerHandType> HandTypeChanged;
 
     /// <summary>
+    /// 达到5张牌事件
+    /// </summary>
+    public static event Action<PokerHandType> HandCardMax;
+
+    /// <summary>
     /// 获取容器A中的卡牌集合
     /// </summary>
     public Dictionary<string, Card> ContainerACards => containerACards;
@@ -39,6 +44,16 @@ public class CardsCollectionModel : BaseModel
     /// 容器A的改变事件
     /// </summary>
     public static event Action<int> ContainerACardsCountChanged;
+
+    /// <summary>
+    /// 容器A空牌事件委托
+    /// </summary>
+    public delegate void ContainerANoCardsHander();
+
+    /// <summary>
+    /// 容器A没有牌事件
+    /// </summary>
+    public static event ContainerANoCardsHander ContainerANoCardsCount;
 
     /// <summary>
     /// 获取容器B中的卡牌集合
@@ -89,6 +104,10 @@ public class CardsCollectionModel : BaseModel
             bool result = containerACards.Remove(key);
             if (result)
             {
+                if(containerACards.Count == 0)
+                {
+                    ContainerANoCardsCount?.Invoke();
+                }
                 OnContainerACardsCountChanged();
             }
             return result;
@@ -295,9 +314,10 @@ public class CardsCollectionModel : BaseModel
         }
 
         
-        // 检查容器B是否已满5张牌，如果是，则调用控制器进行延迟清理
+        // 检查容器B是否已满5张牌，如果是，则计算分数然后调用控制器进行延迟清理
         if (containerBCards.Count >= 5)
         {
+            HandCardMax?.Invoke(CurrentPokerHandType);
             // 延迟清理容器B中的卡牌，让玩家有时间看到结果
             GameApp.ControllerManager.ApplyFunc((int)ControllerType.Card, Defines.ClearContainerBWithDelay, new object[0]);
         }

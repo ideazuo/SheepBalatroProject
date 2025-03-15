@@ -15,7 +15,12 @@ public class CardController : BaseController
     /// 卡牌集合模型，管理容器A和容器B中的卡牌集合
     /// </summary>
     private CardsCollectionModel cardsCollectionModel;
-    
+
+    /// <summary>
+    /// 计算分数模型
+    /// </summary>
+    private ScoreModel scoreModel;
+
     /// <summary>
     /// 所有已创建的卡牌字典，键为唯一ID，值为卡牌对象
     /// </summary>
@@ -49,6 +54,8 @@ public class CardController : BaseController
     {
         // 初始化卡牌集合模型
         cardsCollectionModel = new CardsCollectionModel(this);
+        scoreModel = new ScoreModel(this);
+
     }
     
     /// <summary>

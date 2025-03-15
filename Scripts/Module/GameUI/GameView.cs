@@ -9,16 +9,26 @@ public class GameView : BaseView
     Transform selectCardNodeParent;//选择的牌存放节点
     Text originalCardDeckText;//源牌库剩余数量
     Text handTypeText;//当前手牌类型
+    Text scoreText;//当前分数
+    Text totalScoreText;//历史最高分
+
+    // Key for storing the total score in PlayerPrefs
+    private const string TOTAL_SCORE_KEY = "PokerGameTotalScore";
 
 
     void Start()
     {
         CardsCollectionModel.ContainerACardsCountChanged += OnContainerACardsCountChanged;
         CardsCollectionModel.HandTypeChanged += OnHandTypeChanged;
+        ScoreModel.ScoreChanged += GetScore;
+        ScoreModel.TotalScoreChanged += GetTotalScore;
         cardNodeParent = Find<Transform>("CardNode");
         selectCardNodeParent = Find<Transform>("SelectCardNode");
         originalCardDeckText = Find<Text>("OriginalCardDeck/Text");
         handTypeText = Find<Text>("HandTypeText");
+        scoreText = Find<Text>("ScoreNode/Text");
+        totalScoreText = Find<Text>("TotalScoreNode/Text");
+        LoadTotalScore();
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
     }
@@ -39,13 +49,35 @@ public class GameView : BaseView
         ConfigData handData = GameApp.ConfigManager.GetConfigData("hand");
         foreach (var item in handData.GetLines())
         {
-            int key = item.Key;
             if (item.Value["HandType"] == handType.ToString())
             {
                 handTypeText.text = item.Value["Name"];
                 return;
             }
             handTypeText.text = "";
+        }
+    }
+
+    private void GetScore(int score)
+    {
+        scoreText.text = score.ToString();
+    }
+
+    private void GetTotalScore(int score)
+    {
+        totalScoreText.text = score.ToString();
+    }
+
+    private void LoadTotalScore()
+    {
+        // 如果存在保存的分数，则加载它
+        if (PlayerPrefs.HasKey(TOTAL_SCORE_KEY))
+        {
+            totalScoreText.text = PlayerPrefs.GetInt(TOTAL_SCORE_KEY).ToString();
+        }
+        else
+        {
+            totalScoreText.text = "0";
         }
     }
 }

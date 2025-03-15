@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ScoreModel : BaseModel 
+{
+    private ConfigData handData;
+    private int _score;
+    private int _totalScore;
+
+    // Key for storing the total score in PlayerPrefs
+    private const string TOTAL_SCORE_KEY = "PokerGameTotalScore";
+
+    /// <summary>
+    /// 分数改变事件
+    /// </summary>
+    public static event Action<int> ScoreChanged;
+
+    /// <summary>
+    /// 历史最高分改变事件
+    /// </summary>
+    public static event Action<int> TotalScoreChanged;
+
+    public int Score
+    {
+        get
+        {
+            return _score;
+        }
+    }
+
+    public int TotalScore
+    {
+        get
+        {
+            return _totalScore;
+        }
+    }
+
+    public ScoreModel(BaseController crl) : base(crl)
+    {
+        _score = 0;
+
+        CardsCollectionModel.HandCardMax += HandScore;
+        CardsCollectionModel.ContainerANoCardsCount += GetTotalScore;
+    }
+
+    /// <summary>
+    /// 保存历史最高分数到PlayerPrefs
+    /// </summary>
+    private void SaveTotalScore()
+    {
+        PlayerPrefs.SetInt(TOTAL_SCORE_KEY, _totalScore);
+        PlayerPrefs.Save();
+        Debug.Log($"保存历史最高分: {_totalScore}");
+    }
+
+    public void HandScore(PokerHandType handType)
+    {
+        handData = GameApp.ConfigManager.GetConfigData("hand");
+        foreach (var item in handData.GetLines())
+        {
+            if (item.Value["HandType"] == handType.ToString())
+            {
+                _score += int.Parse(item.Value["Score"]) * int.Parse(item.Value["Multiplier"]);
+                ScoreChanged?.Invoke(_score);
+                return;
+            }
+        }
+    }
+
+    public void GetTotalScore()
+    {
+        if (_score > _totalScore)
+        {
+            _totalScore = _score;
+            TotalScoreChanged?.Invoke(_totalScore);
+            
+            // 保存新的历史最高分
+            SaveTotalScore();
+        }
+    }
+}
