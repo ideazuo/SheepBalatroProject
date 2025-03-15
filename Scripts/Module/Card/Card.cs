@@ -49,11 +49,6 @@ public class Card : BaseView, IPointerClickHandler
     }
     
     /// <summary>
-    /// 卡牌类型
-    /// </summary>
-    public CardType Type { get; private set; }
-    
-    /// <summary>
     /// 卡牌花色
     /// </summary>
     public CardSuit Suit { get; private set; }
@@ -100,22 +95,13 @@ public class Card : BaseView, IPointerClickHandler
     /// <param name="type">卡牌类型</param>
     /// <param name="suit">卡牌花色（仅扑克牌类型有效）</param>
     /// <param name="rank">卡牌点数（仅扑克牌类型有效）</param>
-    public void SetCardInfo(CardType type, CardSuit suit = CardSuit.Spade, CardRank rank = CardRank.Ace)
+    public void SetCardInfo(CardSuit suit = CardSuit.Spade, CardRank rank = CardRank.Ace)
     {
-        Type = type;
-        
-        if (type == CardType.Poker)
-        {
             Suit = suit;
             Rank = rank;
             
             // 设置扑克牌图片
             UpdateCardImage();
-        }
-        else
-        {
-            // 宝箱牌逻辑，预留
-        }
     }
     
     /// <summary>
@@ -132,7 +118,7 @@ public class Card : BaseView, IPointerClickHandler
     /// </summary>
     private void UpdateCardImage()
     {
-        if (Type != CardType.Poker || cardImage == null)
+        if (cardImage == null)
             return;
         
         string suitPrefix = "";
@@ -190,50 +176,47 @@ public class Card : BaseView, IPointerClickHandler
         if (!isInteractable)
             return;
 
-        if (Type == CardType.Poker)
+        string suitName = "";
+        switch (Suit)
         {
-            string suitName = "";
-            switch (Suit)
-            {
-                case CardSuit.Club:
-                    suitName = "梅花";
-                    break;
-                case CardSuit.Diamond:
-                    suitName = "方块";
-                    break;
-                case CardSuit.Heart:
-                    suitName = "红桃";
-                    break;
-                case CardSuit.Spade:
-                    suitName = "黑桃";
-                    break;
-            }
-
-            string rankName = "";
-            switch (Rank)
-            {
-                case CardRank.Ace:
-                    rankName = "A";
-                    break;
-                case CardRank.Jack:
-                    rankName = "J";
-                    break;
-                case CardRank.Queen:
-                    rankName = "Q";
-                    break;
-                case CardRank.King:
-                    rankName = "K";
-                    break;
-                default:
-                    rankName = ((int)Rank).ToString();
-                    break;
-            }
-
-            Debug.Log($"点击了{suitName}{rankName}");
-
-            // 触发卡牌点击事件，由Controller处理后续业务逻辑
-            OnCardClicked?.Invoke(this);
+            case CardSuit.Club:
+                suitName = "梅花";
+                break;
+            case CardSuit.Diamond:
+                suitName = "方块";
+                break;
+            case CardSuit.Heart:
+                suitName = "红桃";
+                break;
+            case CardSuit.Spade:
+                suitName = "黑桃";
+                break;
         }
+
+        string rankName = "";
+        switch (Rank)
+        {
+            case CardRank.Ace:
+                rankName = "A";
+                break;
+            case CardRank.Jack:
+                rankName = "J";
+                break;
+            case CardRank.Queen:
+                rankName = "Q";
+                break;
+            case CardRank.King:
+                rankName = "K";
+                break;
+            default:
+                rankName = ((int)Rank).ToString();
+                break;
+        }
+
+        Debug.Log($"点击了{suitName}{rankName}");
+
+        // 触发卡牌点击事件，由Controller处理后续业务逻辑
+        OnCardClicked?.Invoke(this);
     }
 
     /// <summary>

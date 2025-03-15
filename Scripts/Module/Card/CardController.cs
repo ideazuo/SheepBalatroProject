@@ -50,7 +50,7 @@ public class CardController : BaseController
     {
         base.InitModuleEvent();
         // 注册各种卡牌操作的回调函数
-        //RegisterFunc(Defines.CreateCard, CreateCard);
+        RegisterFunc(Defines.CreateCard, CreateCard);
         RegisterFunc(Defines.GeneratePokerDecks, GeneratePokerDecks);
         RegisterFunc(Defines.RandomDealCards, RandomDealCards);
         RegisterFunc(Defines.SetContainerB, SetContainerB);
@@ -76,7 +76,7 @@ public class CardController : BaseController
         cardModel.ClearContainerA();
         Debug.Log("清空了容器A中的卡牌集合");
     }
-    
+
     /// <summary>
     /// 创建卡牌实例并初始化其属性
     /// </summary>
@@ -89,64 +89,57 @@ public class CardController : BaseController
     /// <remarks>
     /// 该方法加载卡牌预制体并实例化，设置卡牌属性，并将其添加到模型中
     /// </remarks>
-    //private void CreateCard(object[] args)
-    //{
-    //    // 检查参数
-    //    if (args.Length < 4)
-    //    {
-    //        Debug.LogError("CreateCard参数不足");
-    //        return;
-    //    }
-        
-    //    CardType cardType = (CardType)args[0];
-    //    Transform parent = (Transform)args[3];
-        
-    //    // 加载卡牌预制体
-    //    GameObject cardPrefab = Resources.Load<GameObject>("Models/Card");
-    //    if (cardPrefab == null)
-    //    {
-    //        Debug.LogError("找不到Card预制体：Resources/Models/Card");
-    //        return;
-    //    }
-        
-    //    // 实例化卡牌对象
-    //    GameObject cardObj = GameObject.Instantiate(cardPrefab, parent);
-    //    if (cardObj == null)
-    //    {
-    //        Debug.LogError("创建Card预制体失败");
-    //        return;
-    //    }
-        
-    //    // 确保卡牌有Image组件用于显示
-    //    Image cardImage = cardObj.GetComponent<Image>();
-    //    if (cardImage == null)
-    //    {
-    //        cardImage = cardObj.AddComponent<Image>();
-    //        Debug.Log("已添加 Image 组件到卡牌");
-    //    }
-        
-    //    // 获取或添加Card组件
-    //    Card card = cardObj.GetComponent<Card>();
-    //    if (card == null)
-    //    {
-    //        card = cardObj.AddComponent<Card>();
-    //    }
-        
-    //    // 根据卡牌类型设置属性
-    //    if (cardType == CardType.Poker && args.Length >= 3)
-    //    {
-    //        CardSuit suit = (CardSuit)args[1];
-    //        CardRank rank = (CardRank)args[2];
-    //        card.SetCardInfo(cardType, suit, rank);
-    //    }
-    //    else
-    //    {
-    //        card.SetCardInfo(cardType);
-    //    }
-        
-    //    // 将创建的卡牌添加到模型中
-    //    //cardModel.AddCard(card);
-    //}
+    private void CreateCard(object[] args)
+    {
+        // 检查参数
+        if (args.Length < 4)
+        {
+            Debug.LogError("CreateCard参数不足");
+            return;
+        }
+
+        //CardType cardType = (CardType)args[0];
+        Transform parent = (Transform)args[3];
+
+        // 加载卡牌预制体
+        GameObject cardPrefab = Resources.Load<GameObject>("Models/Card");
+        if (cardPrefab == null)
+        {
+            Debug.LogError("找不到Card预制体：Resources/Models/Card");
+            return;
+        }
+
+        // 实例化卡牌对象
+        GameObject cardObj = GameObject.Instantiate(cardPrefab, parent);
+        if (cardObj == null)
+        {
+            Debug.LogError("创建Card预制体失败");
+            return;
+        }
+
+        // 确保卡牌有Image组件用于显示
+        Image cardImage = cardObj.GetComponent<Image>();
+        if (cardImage == null)
+        {
+            cardImage = cardObj.AddComponent<Image>();
+            Debug.Log("已添加 Image 组件到卡牌");
+        }
+
+        // 获取或添加Card组件
+        Card card = cardObj.GetComponent<Card>();
+        if (card == null)
+        {
+            card = cardObj.AddComponent<Card>();
+        }
+
+        // 设置属性
+            CardSuit suit = (CardSuit)args[1];
+            CardRank rank = (CardRank)args[2];
+            card.SetCardInfo(suit, rank);
+
+        // 将创建的卡牌添加到模型中
+        //cardModel.AddCard(card);
+    }
 
     /// <summary>
     /// 生成指定副数的扑克牌并存储在字典中
@@ -474,11 +467,6 @@ public class CardController : BaseController
 /// </remarks>
 public class CardInfo
 {
-    /// <summary>
-    /// 卡牌类型（如扑克牌）
-    /// </summary>
-    public CardType Type;
-    
     /// <summary>
     /// 卡牌花色（黑桃、红心等）
     /// </summary>

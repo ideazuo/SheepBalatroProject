@@ -79,7 +79,7 @@ public class CardManager
     /// <param name="rank">卡牌点数</param>
     /// <param name="parent">父物体</param>
     /// <returns>创建的卡牌对象</returns>
-    public Card CreateCard(CardType cardType, CardSuit suit, CardRank rank, Transform parent)
+    public Card CreateCard(CardSuit suit, CardRank rank, Transform parent)
     {
         if (cardPrefab == null)
         {
@@ -110,7 +110,7 @@ public class CardManager
         }
         
         // 设置卡牌信息
-        card.SetCardInfo(cardType, suit, rank);
+        card.SetCardInfo(suit, rank);
         
         // 添加重叠检测组件
         CardOverlapDetector detector = cardObj.GetComponent<CardOverlapDetector>();
@@ -194,7 +194,7 @@ public class CardManager
             cardKeys.RemoveAt(randomIndex);
             
             // 创建卡牌
-            Card card = CreateCard(cardInfo.Type, cardInfo.Suit, cardInfo.Rank, containerA);
+            Card card = CreateCard(cardInfo.Suit, cardInfo.Rank, containerA);
             
             // 设置随机位置
             RectTransform cardRect = card.GetComponent<RectTransform>();
@@ -330,7 +330,6 @@ public class CardManager
                     // 创建卡牌信息对象
                     CardInfo cardInfo = new CardInfo
                     {
-                        Type = CardType.Poker,
                         Suit = suit,
                         Rank = rank
                     };

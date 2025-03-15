@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>
-/// 卡牌类型枚举
-/// </summary>
-public enum CardType
-{
-    /// <summary>
-    /// 扑克牌类型
-    /// </summary>
-    Poker,
+///// <summary>
+///// 卡牌类型枚举
+///// </summary>
+//public enum CardType
+//{
+//    /// <summary>
+//    /// 扑克牌类型
+//    /// </summary>
+//    Poker,
 
-    /// <summary>
-    /// 宝箱牌类型
-    /// </summary>
-    Treasure
-}
+//    /// <summary>
+//    /// 宝箱牌类型
+//    /// </summary>
+//    Treasure
+//}
 
 /// <summary>
 /// 扑克牌花色枚举
@@ -121,10 +121,6 @@ public enum CardRank
 /// </summary>
 public class CardModel : BaseModel
 {
-    /// <summary>
-    /// 卡牌列表
-    /// </summary>
-    //public List<Card> Cards { get; private set; } = new List<Card>();
     
     /// <summary>
     /// 卡牌牌组字典
@@ -309,38 +305,6 @@ public class CardModel : BaseModel
     {
         cardDeck.Clear();
     }
-    
-    /// <summary>
-    /// 添加卡牌到模型
-    /// </summary>
-    /// <param name="card">要添加的卡牌</param>
-    //public void AddCard(Card card)
-    //{
-    //    if (card != null && !Cards.Contains(card))
-    //    {
-    //        Cards.Add(card);
-    //    }
-    //}
-    
-    /// <summary>
-    /// 从模型中移除卡牌
-    /// </summary>
-    /// <param name="card">要移除的卡牌</param>
-    //public void RemoveCard(Card card)
-    //{
-    //    if (card != null && Cards.Contains(card))
-    //    {
-    //        Cards.Remove(card);
-    //    }
-    //}
-    
-    /// <summary>
-    /// 清空卡牌列表
-    /// </summary>
-    //public void ClearCards()
-    //{
-    //    Cards.Clear();
-    //}
     
     /// <summary>
     /// 评估容器B中的卡牌组合，判断扑克牌手牌类型
