@@ -12,11 +12,6 @@ using System.Linq;
 public class CardController : BaseController
 {
     /// <summary>
-    /// 卡牌模型，存储卡牌数据和相关业务逻辑
-    /// </summary>
-    private CardModel cardModel;
-    
-    /// <summary>
     /// 卡牌集合模型，管理容器A和容器B中的卡牌集合
     /// </summary>
     private CardsCollectionModel cardsCollectionModel;
@@ -52,12 +47,8 @@ public class CardController : BaseController
     /// </summary>
     public CardController() : base()
     {
-        // 初始化卡牌模型
-        cardModel = new CardModel();
-        SetModel(cardModel);
-        
         // 初始化卡牌集合模型
-        cardsCollectionModel = new CardsCollectionModel();
+        cardsCollectionModel = new CardsCollectionModel(this);
     }
     
     /// <summary>
@@ -118,6 +109,7 @@ public class CardController : BaseController
         RegisterFunc(Defines.RemoveCardFromContainerA, RemoveCardFromContainerAWithReturn);
         RegisterFunc(Defines.AddCardToContainerB, AddCardToContainerB);
         RegisterFunc(Defines.GetContainerBCount, GetContainerBCount);
+        RegisterFunc(Defines.GetContainerACount, GetContainerACount);
         RegisterFunc(Defines.OnCardOverlapped, OnCardOverlapped);
         RegisterFunc(Defines.OnCardRevealed, OnCardRevealed);
         RegisterFunc(Defines.ClearContainerA, ClearContainerA);
@@ -692,7 +684,17 @@ public class CardController : BaseController
         int count = cardsCollectionModel.ContainerBCards.Count;
         Debug.Log($"容器B中的卡牌数量: {count}");
     }
-    
+
+    /// <summary>
+    /// 获取容器A中卡牌数量
+    /// </summary>
+    /// <param name="args">不需要参数</param>
+    private void GetContainerACount(object[] args)
+    {
+        int count = cardsCollectionModel.ContainerACards.Count;
+        Debug.Log($"容器A中的卡牌数量: {count}");
+    }
+
     /// <summary>
     /// 根据键获取卡牌
     /// </summary>

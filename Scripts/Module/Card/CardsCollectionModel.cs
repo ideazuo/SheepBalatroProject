@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -34,6 +34,24 @@ public class CardsCollectionModel : BaseModel
     /// </summary>
     public Dictionary<string, Card> ContainerBCards => containerBCards;
     
+/// <summary>
+    /// 无参构造函数
+    /// </summary>
+    public CardsCollectionModel() : base()
+    {
+        // 默认初始化
+    }
+    
+    /// <summary>
+    /// 带控制器参数的构造函数
+    /// </summary>
+    /// <param name="controller">关联的控制器</param>
+    public CardsCollectionModel(BaseController controller) : base(controller)
+    {
+        // 调用父类的带参数构造函数，并传递控制器引用
+    }
+    
+
     /// <summary>
     /// 向容器A添加卡牌
     /// </summary>

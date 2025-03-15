@@ -29,6 +29,7 @@ public static class Defines
     public static readonly string RemoveCardFromContainerA = "RemoveCardFromContainerA";//从容器A移除卡牌
     public static readonly string AddCardToContainerB = "AddCardToContainerB";//添加卡牌到容器B
     public static readonly string GetContainerBCount = "GetContainerBCount";//获取容器B中卡牌数量
+    public static readonly string GetContainerACount = "GetContainerACount";//获取容器A中卡牌数量
     public static readonly string OnCardOverlapped = "OnCardOverlapped";//卡牌被遮挡事件
     public static readonly string OnCardRevealed = "OnCardRevealed";//卡牌取消遮挡事件
     public static readonly string ClearContainerA = "ClearContainerA";//清空容器A中的卡牌集合
