@@ -15,19 +15,6 @@ public static class Defines
     public static readonly string OpenSelectLevelView = "OpenSelectLevelView";//打开关卡选择面板
     public static readonly string LoadingScene = "LoadingScene";//加载场景
     public static readonly string BeginFight = "BeginFight";//
-
-    //全局事件相关
-    public static readonly string ShowLevelDesEvent = "ShowLevelDesEvent";
-    public static readonly string HideLevelDesEvent = "HideLevelDesEvent";
-
-    public static readonly string OnSelectEvent = "OnSelectEvent";//选中事件
-    public static readonly string OnUnSelectEvent = "OnUnSelectEvent";//未选中事件
-
-    //option
-    public static readonly string OnAttackEvent = "OnAttackEvent";
-    public static readonly string OnIdleEvent = "OnIdleEvent";
-    public static readonly string OnCancelEvent = "OnCancelEvent";
-    public static readonly string OnRemoveHeroToSceneEvent = "OnRemoveHeroToSceneEvent";
     
     //卡牌相关
     public static readonly string CreateCard = "CreateCard";//创建卡牌
