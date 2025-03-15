@@ -98,7 +98,6 @@ public class CardController : BaseController
             return;
         }
 
-        //CardType cardType = (CardType)args[0];
         Transform parent = (Transform)args[3];
 
         // 加载卡牌预制体
