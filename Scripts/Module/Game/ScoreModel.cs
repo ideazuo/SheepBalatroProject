@@ -9,7 +9,7 @@ public class ScoreModel : BaseModel
     private int _score;
     private int _totalScore;
 
-    // Key for storing the total score in PlayerPrefs
+    //在 PlayerPrefs 中存储总分的键
     private const string TOTAL_SCORE_KEY = "PokerGameTotalScore";
 
     /// <summary>
