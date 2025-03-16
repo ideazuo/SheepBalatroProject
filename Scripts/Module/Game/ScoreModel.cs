@@ -41,9 +41,22 @@ public class ScoreModel : BaseModel
     public ScoreModel(BaseController crl) : base(crl)
     {
         _score = 0;
-
+        LoadTotalScore();
         CardsCollectionModel.HandCardMax += HandScore;
         CardsCollectionModel.ContainerANoCardsCount += GetTotalScore;
+    }
+
+    private void LoadTotalScore()
+    {
+        // 如果存在保存的分数，则加载它
+        if (PlayerPrefs.HasKey(TOTAL_SCORE_KEY))
+        {
+            _totalScore = PlayerPrefs.GetInt(TOTAL_SCORE_KEY);
+        }
+        else
+        {
+            _totalScore = 0;
+        }
     }
 
     /// <summary>

@@ -298,10 +298,28 @@ public class CardController : BaseController
             return;
         }
         
-        // 清空容器A现有卡牌
+        // 先获取containerA的所有子对象并保存在List中
+        List<Transform> cardPositions = new List<Transform>();
+        for (int i = 0; i < containerA.childCount; i++)
+        {
+            cardPositions.Add(containerA.GetChild(i));
+        }
+        
+        // 检查是否有子对象作为位置标记
+        if (cardPositions.Count == 0)
+        {
+            Debug.LogWarning("容器A没有子对象作为位置标记，将使用随机位置");
+        }
+        
+        // 清空容器A现有卡牌实例（但保留位置标记）
         for (int i = containerA.childCount - 1; i >= 0; i--)
         {
-            GameObject.Destroy(containerA.GetChild(i).gameObject);
+            // 只删除Card组件的游戏对象，保留没有Card组件的位置标记
+            Transform child = containerA.GetChild(i);
+            if (child.GetComponent<Card>() != null)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
         }
         
         // 清空卡牌字典
@@ -336,6 +354,9 @@ public class CardController : BaseController
         List<string> cardKeys = new List<string>(cardDeck.Keys);
         System.Random random = new System.Random();
         
+        // 位置索引，用于循环使用cardPositions中的位置
+        int positionIndex = 0;
+        
         // 逐一创建所有卡牌
         while (cardKeys.Count > 0)
         {
@@ -348,14 +369,40 @@ public class CardController : BaseController
             // 创建卡牌
             Card card = CreateCardInstance(cardInfo.Suit, cardInfo.Rank, containerA);
             
-            // 设置随机位置
+            // 设置卡牌位置
             RectTransform cardRect = card.GetComponent<RectTransform>();
-            float maxX = (containerWidth - cardWidth) / 2;
-            float maxY = (containerHeight - cardHeight) / 2;
-            float randomX = Random.Range(-maxX, maxX);
-            float randomY = Random.Range(-maxY, maxY);
             
-            cardRect.anchoredPosition = new Vector2(randomX, randomY);
+            if (cardPositions.Count > 0)
+            {
+                // 使用位置标记的坐标
+                // 当List中对象用完时循环使用第一个位置
+                Transform positionMarker = cardPositions[positionIndex];
+                RectTransform markerRect = positionMarker as RectTransform;
+                
+                if (markerRect != null)
+                {
+                    // 使用位置标记的坐标
+                    cardRect.anchoredPosition = markerRect.anchoredPosition;
+                }
+                else
+                {
+                    // 如果位置标记没有RectTransform，使用局部坐标
+                    cardRect.localPosition = positionMarker.localPosition;
+                }
+                
+                // 更新位置索引，循环使用位置列表
+                positionIndex = (positionIndex + 1) % cardPositions.Count;
+            }
+            else
+            {
+                // 如果没有位置标记，使用随机位置
+                float maxX = (containerWidth - cardWidth) / 2;
+                float maxY = (containerHeight - cardHeight) / 2;
+                float randomX = Random.Range(-maxX, maxX);
+                float randomY = Random.Range(-maxY, maxY);
+                
+                cardRect.anchoredPosition = new Vector2(randomX, randomY);
+            }
             
             // 添加到模型
             object[] args = new object[] { card.GetCardKey(), card };
