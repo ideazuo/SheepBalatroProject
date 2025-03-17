@@ -410,6 +410,108 @@ public class CardController : BaseController
         }
         
         Debug.Log($"成功发放所有卡牌到容器A");
+        
+        // 倒置容器A中的卡牌顺序
+        ReverseCardsInContainerA(containerA);
+    }
+    
+    /// <summary>
+    /// 倒置容器A中卡牌的顺序
+    /// </summary>
+    /// <param name="containerA">容器A对象</param>
+    private void ReverseCardsInContainerA(Transform containerA)
+    {
+        if (containerA == null || containerA.childCount <= 1)
+            return;
+            
+        // 只收集有Card组件的游戏对象
+        List<Transform> cardObjects = new List<Transform>();
+        
+        // 筛选出所有卡牌对象（有Card组件的对象）
+        for (int i = 0; i < containerA.childCount; i++)
+        {
+            Transform child = containerA.GetChild(i);
+            if (child.GetComponent<Card>() != null)
+            {
+                cardObjects.Add(child);
+            }
+        }
+        
+        // 如果没有卡牌对象，直接返回
+        int cardCount = cardObjects.Count;
+        if (cardCount <= 1)
+        {
+            Debug.Log("容器A中没有足够的卡牌对象来倒置顺序");
+            return;
+        }
+        
+        // 计算每个卡牌的新顺序，保持其他对象（如位置标记）的顺序不变
+        // 首先获取所有卡牌当前的siblingIndex
+        List<int> cardIndices = new List<int>(cardCount);
+        foreach (var cardTransform in cardObjects)
+        {
+            cardIndices.Add(cardTransform.GetSiblingIndex());
+        }
+        
+        // 按照索引从小到大排序卡牌和索引
+        for (int i = 0; i < cardCount; i++)
+        {
+            for (int j = i + 1; j < cardCount; j++)
+            {
+                if (cardIndices[i] > cardIndices[j])
+                {
+                    // 交换索引
+                    int tempIndex = cardIndices[i];
+                    cardIndices[i] = cardIndices[j];
+                    cardIndices[j] = tempIndex;
+                    
+                    // 交换卡牌引用
+                    Transform tempCard = cardObjects[i];
+                    cardObjects[i] = cardObjects[j];
+                    cardObjects[j] = tempCard;
+                }
+            }
+        }
+        
+        // 反向设置卡牌的siblingIndex，使最后创建的卡牌位于最底层，最先创建的卡牌位于最顶层
+        for (int i = 0; i < cardCount; i++)
+        {
+            // 使用原始卡牌位置，但倒序分配
+            cardObjects[i].SetSiblingIndex(cardIndices[cardCount - 1 - i]);
+        }
+        
+        Debug.Log($"已倒置容器A中{cardCount}张卡牌的顺序，保持其他对象位置不变");
+        
+        // 倒置后重新设置卡牌之间的遮挡关系
+        UpdateAllCardsOverlapState(containerA);
+    }
+    
+    /// <summary>
+    /// 更新容器中所有卡牌的遮挡状态
+    /// </summary>
+    /// <param name="container">卡牌容器</param>
+    private void UpdateAllCardsOverlapState(Transform container)
+    {
+        if (container == null || container.childCount == 0)
+            return;
+            
+        // 遍历容器中的所有卡牌，更新其遮挡状态
+        for (int i = 0; i < container.childCount; i++)
+        {
+            CardOverlapDetector detector = container.GetChild(i).GetComponent<CardOverlapDetector>();
+            if (detector != null)
+            {
+                bool isCurrentlyOverlapped = detector.IsCardOverlapped();
+                
+                // 如果当前检测到的遮挡状态与记录的状态不同，则更新状态
+                if (isCurrentlyOverlapped != detector.IsOverlapped)
+                {
+                    detector.SetOverlapped(isCurrentlyOverlapped);
+                }
+            }
+        }
+        
+        Debug.Log($"已更新容器中所有卡牌的遮挡状态");
     }
     
     /// <summary>
