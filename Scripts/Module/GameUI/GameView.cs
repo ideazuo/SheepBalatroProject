@@ -11,8 +11,9 @@ public class GameView : BaseView
     Text handTypeText;//当前手牌类型
     Text scoreText;//当前分数
     Text totalScoreText;//历史最高分
+    Button getCardButton;
 
-    // Key for storing the total score in PlayerPrefs
+    //在 PlayerPrefs 中存储总分的键
     private const string TOTAL_SCORE_KEY = "PokerGameTotalScore";
 
 
@@ -28,9 +29,14 @@ public class GameView : BaseView
         handTypeText = Find<Text>("HandTypeText");
         scoreText = Find<Text>("ScoreNode/Text");
         totalScoreText = Find<Text>("TotalScoreNode/Text");
+
+        getCardButton = Find<Button>("GetCardButton");
+        getCardButton.onClick.AddListener(GetCard);
+
         LoadTotalScore();
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
+
     }
 
     // Update is called once per frame
@@ -79,5 +85,11 @@ public class GameView : BaseView
         {
             totalScoreText.text = "0";
         }
+    }
+
+    private void GetCard()
+    {
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
     }
 }
