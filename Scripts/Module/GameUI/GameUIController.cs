@@ -43,6 +43,33 @@ public class GameUIController : BaseController
             parentTf = GameApp.ViewManager.canvasTf
         });
 
+        //注册关卡面板
+        GameApp.ViewManager.Register(ViewType.LevelView, new ViewInfo()
+        {
+            PrefabName = "LevelView",
+            controller = this,
+            Sorting_Order = 1,
+            parentTf = GameApp.ViewManager.canvasTf
+        });
+
+        //注册胜利面板
+        GameApp.ViewManager.Register(ViewType.WinView, new ViewInfo()
+        {
+            PrefabName = "WinView",
+            controller = this,
+            Sorting_Order = 1,
+            parentTf = GameApp.ViewManager.canvasTf
+        });
+
+        //注册失败面板
+        GameApp.ViewManager.Register(ViewType.LoseView, new ViewInfo()
+        {
+            PrefabName = "LoseView",
+            controller = this,
+            Sorting_Order = 1,
+            parentTf = GameApp.ViewManager.canvasTf
+        });
+
         InitModuleEvent();//初始化模板事件
         InitGlobalEvent();//初始化全局事件
     }
@@ -53,6 +80,9 @@ public class GameUIController : BaseController
         RegisterFunc(Defines.OpenSetView, openSetView);//注册打开设置面板
         RegisterFunc(Defines.OpenMessageView, openMessageView);//注册打开提示面板
         RegisterFunc(Defines.OpenGameView, openGameView);//注册打开游戏面板
+        RegisterFunc(Defines.OpenLevelView, openLevelView);//注册打开关卡面板
+        RegisterFunc(Defines.OpenWinView, openWinView);//注册打开胜利面板
+        RegisterFunc(Defines.OpenLoseView, openLoseView);//注册打开失败面板
     }
 
     //打开开始游戏面板
@@ -73,9 +103,28 @@ public class GameUIController : BaseController
         GameApp.ViewManager.Open(ViewType.MessageView, arg);
     }
 
+    //打开游戏面板
     private void openGameView(System.Object[] arg)
     {
         GameApp.ViewManager.Open(ViewType.GameView, arg);
+    }
+
+    //打开关卡面板
+    private void openLevelView(System.Object[] arg)
+    {
+        GameApp.ViewManager.Open(ViewType.LevelView, arg);
+    }
+
+    //打开胜利面板
+    private void openWinView(System.Object[] arg)
+    {
+        GameApp.ViewManager.Open(ViewType.WinView, arg);
+    }
+
+    //关打开失败面板
+    private void openLoseView(System.Object[] arg)
+    {
+        GameApp.ViewManager.Open(ViewType.LoseView, arg);
     }
 
 }

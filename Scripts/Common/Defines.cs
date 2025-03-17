@@ -12,10 +12,10 @@ public static class Defines
     public static readonly string OpenSetView = "OpenSetView";//打开设置面板
     public static readonly string OpenMessageView = "OpenMessageView";//打开提示面板
     public static readonly string OpenGameView = "OpenGameView";//打开游戏面板
-    public static readonly string OpenSelectLevelView = "OpenSelectLevelView";//打开关卡选择面板
-    public static readonly string LoadingScene = "LoadingScene";//加载场景
-    public static readonly string BeginFight = "BeginFight";//
-    
+    public static readonly string OpenLevelView = "OpenLevelView";//打开关卡面板
+    public static readonly string OpenWinView = "OpenWinView";//打开关卡面板
+    public static readonly string OpenLoseView = "OpenLoseView";//打开关卡面板
+
     //卡牌相关
     public static readonly string CreateCard = "CreateCard";//创建卡牌
     public static readonly string GeneratePokerDecks = "GeneratePokerDecks";//生成扑克牌组

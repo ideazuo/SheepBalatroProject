@@ -10,5 +10,8 @@ public enum ViewType
     StartView,
     SetView,
     MessageView,
-    GameView
+    GameView,
+    LevelView,
+    WinView,
+    LoseView
 }
