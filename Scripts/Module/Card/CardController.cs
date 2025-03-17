@@ -45,7 +45,7 @@ public class CardController : BaseController
     /// 容器B - 存放选中卡牌的容器
     /// </summary>
     private Transform containerB;
-    
+
     /// <summary>
     /// 构造函数，初始化卡牌控制器
     /// 创建卡牌模型并设置关联

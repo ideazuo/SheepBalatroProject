@@ -56,11 +56,23 @@ public class CardsCollectionModel : BaseModel
     public static event ContainerANoCardsHander ContainerANoCardsCount;
 
     /// <summary>
+    /// 游戏结束事件委托
+    /// </summary>
+    public delegate void CGameOverHander();
+
+    /// <summary>
+    /// 游戏结束事件
+    /// </summary>
+    public static event CGameOverHander GameOver;
+
+    /// <summary>
     /// 获取容器B中的卡牌集合
     /// </summary>
     public Dictionary<string, Card> ContainerBCards => containerBCards;
-    
-/// <summary>
+
+    private LevelModel levelModel;
+
+    /// <summary>
     /// 无参构造函数
     /// </summary>
     public CardsCollectionModel() : base()
@@ -75,6 +87,7 @@ public class CardsCollectionModel : BaseModel
     public CardsCollectionModel(BaseController controller) : base(controller)
     {
         // 调用父类的带参数构造函数，并传递控制器引用
+        levelModel = new LevelModel();
     }
     
 
@@ -106,7 +119,15 @@ public class CardsCollectionModel : BaseModel
             {
                 if(containerACards.Count == 0)
                 {
-                    ContainerANoCardsCount?.Invoke();
+                    if(levelModel.LeveNum == 2)
+                    {
+                        GameOver?.Invoke();
+                    }
+                    else
+                    {
+                        ContainerANoCardsCount?.Invoke();
+                    }
+                    
                 }
                 OnContainerACardsCountChanged();
             }

@@ -23,6 +23,9 @@ public class GameView : BaseView
         CardsCollectionModel.HandTypeChanged += OnHandTypeChanged;
         ScoreModel.ScoreChanged += GetScore;
         ScoreModel.TotalScoreChanged += GetTotalScore;
+
+        CardsCollectionModel.ContainerANoCardsCount += FirstLevelDown;
+        CardsCollectionModel.GameOver += OnGameOver;
         cardNodeParent = Find<Transform>("CardNode");
         selectCardNodeParent = Find<Transform>("SelectCardNode");
         originalCardDeckText = Find<Text>("OriginalCardDeck/Text");
@@ -89,6 +92,19 @@ public class GameView : BaseView
 
     private void GetCard()
     {
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
+        Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
+    }
+
+    private void OnGameOver()
+    {
+        ApplyFunc(Defines.OpenWinView);
+    }
+
+    private void FirstLevelDown()
+    {
+        scoreText.text = "0";
+        ApplyFunc(Defines.OpenLevelView);
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.GeneratePokerDecks, 1);
         Controller.ApplyControllerFunc((int)ControllerType.Card, Defines.RandomDealCards, cardNodeParent, selectCardNodeParent);
     }

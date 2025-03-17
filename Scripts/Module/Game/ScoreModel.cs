@@ -43,7 +43,8 @@ public class ScoreModel : BaseModel
         _score = 0;
         LoadTotalScore();
         CardsCollectionModel.HandCardMax += HandScore;
-        CardsCollectionModel.ContainerANoCardsCount += GetTotalScore;
+        CardsCollectionModel.GameOver += GetTotalScore;
+        CardsCollectionModel.ContainerANoCardsCount += FirstLevelDown;
     }
 
     private void LoadTotalScore()
@@ -83,7 +84,7 @@ public class ScoreModel : BaseModel
         }
     }
 
-    public void GetTotalScore()
+    private void GetTotalScore()
     {
         if (_score > _totalScore)
         {
@@ -93,5 +94,10 @@ public class ScoreModel : BaseModel
             // 保存新的历史最高分
             SaveTotalScore();
         }
+    }
+
+    private void FirstLevelDown()
+    {
+        _score = 0;
     }
 }
